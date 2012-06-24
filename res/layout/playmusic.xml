@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- A FrameLayout is used to have, on the background, the 3D View, and in the foreground, the main UI. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+    >
+
+    <!-- The 3D layout shown begin the "real" UI interface in the foreground. -->
+    <aks.jnv.view3d.EqualizerGLSurfaceView
+        android:id="@+id/playmusic3dview"
+        android:orientation="vertical"
+	  	android:layout_width="match_parent"
+	  	android:layout_height="match_parent"
+        />
+
+	<!-- The main UI Layout containing the song information and the buttons for the user interactions. -->
+  	<LinearLayout
+	  	android:orientation="vertical"
+	  	android:layout_width="match_parent"
+	  	android:layout_height="match_parent"
+	  	android:layout_gravity="center_horizontal"
+	  	>
+	  
+	 	<TextView
+		  	android:id="@+id/maintext"
+		  	android:layout_width="wrap_content"
+		  	android:layout_height="wrap_content"
+		  	android:gravity="center"
+		  	android:background="@drawable/arkosplayertext"
+		  	android:layout_gravity="center"
+	  	/>
+	  
+	 	<!-- LinearLayout containing the player control buttons. -->
+	 	<LinearLayout
+		  	android:orientation="horizontal"
+		  	android:layout_width="wrap_content"
+		  	android:layout_height="wrap_content"
+		  	android:layout_gravity="center_horizontal"
+	  	>
+	  	
+	 	    <Button
+	 	        android:id="@+id/previousbuttonplaymusicactivity"
+	 	        android:background="@drawable/backwardicon"
+	 	        android:layout_width="60dp"
+		  		android:layout_height="60dp"
+	 	        />
+	 	    <!-- The play/buttons will be displayed if necesseray. -->
+	 	    <Button
+	 	        android:id="@+id/playbuttonplaymusicactivity"
+	 	        android:background="@drawable/playicon"
+	 	        android:layout_width="60dp"
+		  		android:layout_height="60dp"
+	 	        />
+	 	    <Button
+	 	        android:id="@+id/pausebuttonplaymusicactivity"
+	 	        android:background="@drawable/pauseicon"
+	 	        android:layout_width="60dp"
+		  		android:layout_height="60dp"
+	 	        />
+	 	    <Button
+	 	        android:id="@+id/nextbuttonplaymusicactivity"
+	 	        android:background="@drawable/forwardicon"
+	 	        android:layout_width="60dp"
+		  		android:layout_height="60dp"
+	 	        />
+	 	    
+	 </LinearLayout>
+	 	
+	 	
+	  
+	 <!-- One RelativeLayout containing the SeekBar, forced to the bottom of the screen, -->
+	 <!-- as well as the two TextView set just above it, relative to it. -->
+		<RelativeLayout
+		 	android:layout_width="fill_parent"
+		 	android:layout_height="wrap_content"
+		     >
+	 	    
+    	  <SeekBar
+		  	android:id="@+id/seekbarplaymusicactivity"
+		  	android:layout_width="fill_parent"
+		  	android:layout_height="wrap_content"
+		   	android:layout_alignParentBottom="true"
+		  />	
+		  
+		  <TextView
+		  	android:id="@+id/currentpositiontextplaymusicactivity"
+		  	android:layout_width="wrap_content"
+		  	android:layout_height="wrap_content"
+		  	android:text="@string/empty"
+		  	android:layout_alignParentLeft="true"
+		  	android:layout_above="@id/seekbarplaymusicactivity"
+		  />
+		  <TextView
+		  	android:id="@+id/durationtextplaymusicactivity"
+		  	android:layout_width="wrap_content"
+		  	android:layout_height="wrap_content"
+		  	android:text="@string/empty"
+		  	android:layout_alignParentRight="true"
+		  	android:layout_above="@id/seekbarplaymusicactivity"
+		  />
+	
+		</RelativeLayout>		 
+	</LinearLayout>
+
+
+</FrameLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="hello">Hello World, FirstActivity!</string>
+    <string name="app_name">Arkos Player</string>
+    <string name="local_service_name">MyLocalService</string>
+    <string name="started">Service started.</string>
+    <string name="running">Service running.</string>
+    <string name="stopped">Service stopped.</string>
+    <string name="unknown">Unknown state !</string>
+    <string name="destroyedService">Service destroyed.</string>
+    <string name="notificationTitle">Arkos Player</string>
+    <string name="empty">(empty)</string>
+    <string name="author">Author</string>
+</resources>
