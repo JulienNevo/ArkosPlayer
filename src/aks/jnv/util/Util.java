@@ -30,16 +30,17 @@
 
 package aks.jnv.util;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jp.gr.java_conf.dangan.util.lha.LhaChecksum;
-import jp.gr.java_conf.dangan.util.lha.LhaFile;
-import jp.gr.java_conf.dangan.util.lha.LhaHeader;
-import jp.gr.java_conf.dangan.util.lha.LhaInputStream;
+import android.util.Log;
+
+import net.sourceforge.lhadecompressor.LhaEntry;
+import net.sourceforge.lhadecompressor.LhaFile;
 
 /**
  * Some utility methods.
@@ -49,6 +50,9 @@ import jp.gr.java_conf.dangan.util.lha.LhaInputStream;
  */
 public class Util {
 
+	/** The size of the buffer for reading files. */
+	private static final int BUFFER_SIZE = 16384;
+	
 	/**
      * Reads the bytes of an input stream.
      * @param inputStream an input stream from which to read the application.
@@ -66,7 +70,7 @@ public class Util {
         	try {
 	        	buffer = new ByteArrayOutputStream();
 	        	
-	        	byte[] dataRead = new byte[16384];
+	        	byte[] dataRead = new byte[BUFFER_SIZE];
 	        	int nbBytesRead;
 	        	
 	        	while ((nbBytesRead = inputStream.read(dataRead)) != -1) {
@@ -108,58 +112,81 @@ public class Util {
 	 * @return an array of bytes.
 	 * @throws IOException 
 	 */
-	public static byte[] unpackLHAFile(InputStream is) throws IOException {
-		
-		/*
-		// CRASHES if not a LHA file ! We'll have to open the stream, test it, if not good, close it, open a new one, get the array.
-		LhaInputStream lis = new LhaInputStream(is);
-
-		byte[] data = null;
-		if (lis.getNextEntry() != null) {
-			data = readInputStream(lis);
-		}
-		*/
-		
-		byte[] data = readInputStream(is);		
-		//is.mark(0);
-		
-		//byte[] header = new byte[length];
-		//int nbBytesRead = is.read(data, 0, length);
-		
-		// Test a (relevant ??) header.
-		if ((data.length > 4) && ((data[3] == 'l') && (data[4] == 'h'))) {
-			// The file "should" be a LHA file.
-			is.reset();
-			LhaInputStream lis = new LhaInputStream(is);
-
-			if (lis.getNextEntry() != null) {
-				data = readInputStream(lis);
-			}	
-		}
-		
-		
-		return data;
-	}
+//	public static byte[] unpackLHAFile(InputStream is) throws IOException {
+//		
+//		/*
+//		// CRASHES if not a LHA file ! We'll have to open the stream, test it, if not good, close it, open a new one, get the array.
+//		LhaInputStream lis = new LhaInputStream(is);
+//
+//		byte[] data = null;
+//		if (lis.getNextEntry() != null) {
+//			data = readInputStream(lis);
+//		}
+//		*/
+//		
+//		byte[] data = readInputStream(is);		
+//		//is.mark(0);
+//		
+//		//byte[] header = new byte[length];
+//		//int nbBytesRead = is.read(data, 0, length);
+//		
+//		// Test a (relevant ??) header.
+//		if ((data.length > 4) && ((data[3] == 'l') && (data[4] == 'h'))) {
+//			// The file "should" be a LHA file.
+//			is.reset();
+//			LhaInputStream lis = new LhaInputStream(is);
+//
+//			if (lis.getNextEntry() != null) {
+//				data = readInputStream(lis);
+//			}	
+//		}
+//		
+//		
+//		return data;
+//	}
 	
 	
-	
-	public static byte[] unpackLHAFile(File musicFile) throws IOException {
+	/**
+	 * Unpacks the given LHA file. If the file isn't present or isn't a LHA file, nothing happens.
+	 * @param musicFile The file to read.
+	 * @return a byte buffer of the uncompressed data, or null.
+	 * @throws Exception
+	 */
+	public static byte[] unpackLHAFile(File musicFile) throws Exception {
 		InputStream is = null;
 		
-		LhaFile lhaFile = new LhaFile(musicFile);
-		LhaHeader[] headers = lhaFile.getEntries();
-		// Does it contain a LHA file ? If not, it may be because it's not a LHA file !
-		if (headers.length > 0) {
-			LhaHeader header = headers[0];
-			is = lhaFile.getInputStream(header);
-		} else {
-			// Probably not a LHA file. We get the bytes anyway.
-			is = new FileInputStream(musicFile);
+		// NEW CODE using LHA Decompressor-bin-0.9.jar.
+		LhaFile lhaFile = null;
+		byte[] data = null;
+		
+		try {
+			lhaFile = new LhaFile(musicFile);
+			LhaEntry entry = lhaFile.getEntry(0);
+			//int length = (int)entry.getOriginalSize();
+			is = new BufferedInputStream(lhaFile.getInputStream(entry), BUFFER_SIZE);
+			data = readInputStream(is);
+			//int nbBytesRead = is.read(data, 0, length);
+		} catch (Exception e) {
+			Log.e("ArkosTracker", "Error while opening the possible LHA file.");
+			data = null;
 		}
 		
+		// Old CODE using the old library.
+		
+//		LhaFile lhaFile = new LhaFile(musicFile);
+//		LhaHeader[] headers = lhaFile.getEntries();
+//		// Does it contain a LHA file ? If not, it may be because it's not a LHA file !
+//		if (headers.length > 0) {
+//			LhaHeader header = headers[0];
+//			is = lhaFile.getInputStream(header);
+//		} else {
+//			// Probably not a LHA file. We get the bytes anyway.
+//			is = new FileInputStream(musicFile);
+//		}
 		
 		
-		byte[] data = readInputStream(is);		
+		
+		//byte[] data = readInputStream(is);		
 		//is.mark(0);
 		
 		//byte[] header = new byte[length];

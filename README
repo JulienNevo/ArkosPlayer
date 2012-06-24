@@ -2,4 +2,14 @@ Arkos Player
 ------------
 By Julien Névo (contact@julien-nevo.com)
 
-First try!
+Uses LHA Decompressor 0.9 (http://sourceforge.net/projects/lhadecompressor/).
+
+This code is for now only pre-alpha :
+- Basic interface that can only play and pause.
+- Can't choose what song to play for now.
+- Only one (hardcoded) song to play.
+- The replay routine is probably too slow. Maybe use JNI to generate the buffer?
+- Most replay code is ok, but some tweakings must be done.
+- Only the YM replay code is ready. SKS and AKS replay code isn't done yet.
+
+Things will get better :).

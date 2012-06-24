@@ -513,7 +513,7 @@ public class YMSongReader implements ISongReader {
 	/**
 	 * Indicates if the given raw binary data fits the format of the song. It may be packed in LHA or not.
 	 * @param musicFile the file containing the song.
-	 * @return true if the given raw binary data fits the format of the song.
+	 * @return the given raw binary data fits the format of the song, or null if something went wrong.
 	 */
 	public static short[] doesRawDataFit(File musicFile) {
 		
@@ -539,7 +539,7 @@ public class YMSongReader implements ISongReader {
 		
 		try {
 			dataByte = Util.unpackLHAFile(musicFile);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
