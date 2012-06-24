@@ -37,6 +37,7 @@ import android.widget.TextView;
  * 						  http://www.vogella.de/articles/AndroidServices/article.html
  * 						  <!-- android:process=":my_process" -->
  * 						  --> No, probably just need to create a worker Thread and that's all.
+ * - SongInformation and Song shared the same information! Redundancy!
  * 
  * - Make a fade in/out options (before/after the song has looped).
  * 
