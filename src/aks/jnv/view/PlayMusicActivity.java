@@ -55,19 +55,17 @@ import android.widget.TextView;
  * - Crash if pause then play.
  * - Wrong frequency, has to hack.
  * - Handle unknown format song (next song if possible ?).
+ * - Cybern2 doesn't crash, but strange looping ending. Cybern3 (YM6) is good though.
  * - Digidrums handled as Short !
  * - Data read handled as Short.
  * - Service is static in FirstActivity... Make AudioService a Singleton !?
- * - Digidrums frequency has to be calculated.
- * - Digidrums frequency problem (Chamber of Shaolin).
- * - Manage YM1,2,3 (link forgotten...).
- * - Low volume forced with a hack (AYBUfferGenerator, line 507).
- *   because mobile cursor doesn't work anymore ??
  * - Service stuttering : Maybe a "process" in the xml would be enough ?
  * 						  http://www.vogella.de/articles/AndroidServices/article.html
  * 						  <!-- android:process=":my_process" -->
  * 						  --> No, probably just need to create a worker Thread and that's all.
  * - SongInformation and Song shared the same information! Redundancy!
+ * - If the last frame of an YM isn't correctly encoded, prevent the crash (Molusk song).
+ * - Show digidrums in the EQ.
  * 
  * - Make a fade in/out options (before/after the song has looped).
  * 

@@ -45,12 +45,20 @@ public final class R {
         public static final int rowlayout=0x7f030002;
     }
     public static final class raw {
-        public static final int inertie=0x7f040000;
-        public static final int jetsetwilly=0x7f040001;
-        public static final int lastv8=0x7f040002;
-        public static final int molusk=0x7f040003;
-        public static final int syntaxdecomp=0x7f040004;
-        public static final int syntaxterror=0x7f040005;
+        public static final int akscreen=0x7f040000;
+        public static final int arpy1=0x7f040001;
+        public static final int bioniccommando1=0x7f040002;
+        public static final int cybern2=0x7f040003;
+        public static final int cybern3=0x7f040004;
+        public static final int inertie=0x7f040005;
+        public static final int jetsetwilly=0x7f040006;
+        public static final int lastv8=0x7f040007;
+        public static final int lethal1=0x7f040008;
+        public static final int megapockolipse=0x7f040009;
+        public static final int molusk=0x7f04000a;
+        public static final int syntaxdecomp=0x7f04000b;
+        public static final int syntaxterror=0x7f04000c;
+        public static final int w3_3=0x7f04000d;
     }
     public static final class string {
         public static final int app_name=0x7f050001;

@@ -37,7 +37,7 @@ import android.media.AudioTrack;
 
 /**
  * This class is a Thread that sends a buffer to the sound card whenever it requires it, thanks to the blocking
- * method write of the Media API.
+ * "write" method of the Media API.
  * 
  * The generation of the buffer is done through the generateAudioBuffer method of the audioBufferGenerator
  * object that should be set before using the Renderer.

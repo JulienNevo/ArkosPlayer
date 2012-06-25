@@ -77,6 +77,9 @@ public class YMSongReader implements ISongReader {
 	
 	private static final int NB_REGISTERS_TILL_YM3 = 14;
 	private static final int NB_REGISTERS_FROM_YM4 = 16;
+	
+	private static final int HEADER_TAG_SIZE = 4;				// Size in bytes of the Header Tag (YMxx).
+	private static final int YM3B_LOOP_INFORMATION_SIZE = 4;	// YM3B have a four bytes loop start DWord at the end of the file.
 
 	/** The song being read.*/
 	private Song song;
@@ -222,71 +225,93 @@ public class YMSongReader implements ISongReader {
 	private void readSongInformation() {
 		YMVersion = data[2] - '0';
 		
-		nbFrames = SongUtil.readDWord(data, NB_VALID_VBL_OFFSET);
-		int songAttributes = SongUtil.readDWord(data, SONG_ATTRIBUTES_OFFSET);
+		// These are default values. They are given only from YM5 and above.
+		PSGFrequency = DEFAULT_PSG_FREQUENCY;
+		replayFrequency = DEFAULT_REPLAY_FREQUENCY;
+		int index = FRAME_LOOP_START_OFFSET;
 		
-		isInterleaved = ((songAttributes & 1) != 0);
-		areSamplesSigned = ((songAttributes & 2) != 0);
-		areSamplesInST4BitsFormat = ((songAttributes & 4) != 0);
-		
-		nbSamples = SongUtil.readWord(data, NB_DIGIDRUMS_OFFSET);
-		
-		// Information about the frequency of the PSG and the song are only available from YM5.
-		// Else we consider the song comes from Atari ST, at 50hz.
-		int index;
-		if (YMVersion >=5) {
-			PSGFrequency = SongUtil.readDWord(data, PSG_FREQUENCY_OFFSET);
-			replayFrequency =  SongUtil.readWord(data, REPLAY_FREQUENCY_OFFSET);
-			index = FRAME_LOOP_START_OFFSET_YM5;
-		} else {
-			PSGFrequency = DEFAULT_PSG_FREQUENCY;
-			replayFrequency = DEFAULT_REPLAY_FREQUENCY;
-			index = FRAME_LOOP_START_OFFSET;
-		}
-		
-		durationInSeconds = (int)(nbFrames / replayFrequency);
-		
-		frameLoopStart = SongUtil.readDWord(data, index);
-		index += DWORD_SIZE;
-		
-		// Skips possible additional data.
-		if (YMVersion >= 5) {
-			int additionalDataSize = SongUtil.readWord(data, index);
-			index += WORD_SIZE + additionalDataSize;
-		}
-
-		// Reads the samples, if any.
-		if (nbSamples > 0) {
-			samples = new short[nbSamples][];
-			
-			for (int i = 0 ; i < nbSamples; i++) {
-				int sampleSize = SongUtil.readDWord(data, index);
-				index += DWORD_SIZE;
-				samples[i] = new short[sampleSize];
-				
-				// Reads the sample data itself.
-				for (int j = 0 ; j < sampleSize; j++) {
-					// Make them use only 4 bits if they don't already, and unsigned.
-					int value = data[index++];
-					if (!areSamplesInST4BitsFormat) {
-						value >>>= 4;
-					}
-					if (areSamplesSigned) {
-						value += 8;
-					}
-					samples[i][j] = (short)value;
-				}
-				
+		if (YMVersion <= 3) {
+			int endTagSize;
+			// Is it a version 3B ?
+			if (data[3] - '0' == 'b') {
+				// If yes, the loop information is encoded at the end.
+				endTagSize = YM3B_LOOP_INFORMATION_SIZE;
+				frameLoopStart = SongUtil.readDWord(data, data.length - endTagSize);
+			} else {
+				endTagSize = 0;
+				frameLoopStart = 0;
 			}
+			
+			// These versions don't hold any information.
+			nbFrames = (data.length - HEADER_TAG_SIZE - endTagSize) / NB_REGISTERS_TILL_YM3;		// Removes the header.
+			registersBaseOffset = HEADER_TAG_SIZE;
+			isInterleaved = true;
+			author = "";
+			name = "";
+			comments = "";
+		} else {
+			// YM Version 4 and more.
+			
+			nbFrames = SongUtil.readDWord(data, NB_VALID_VBL_OFFSET);
+			int songAttributes = SongUtil.readDWord(data, SONG_ATTRIBUTES_OFFSET);
+			
+			isInterleaved = ((songAttributes & 1) != 0);
+			areSamplesSigned = ((songAttributes & 2) != 0);
+			areSamplesInST4BitsFormat = ((songAttributes & 4) != 0);
+			
+			nbSamples = SongUtil.readWord(data, NB_DIGIDRUMS_OFFSET);
+			//Log.e("XXX", "NB DIGIDRUMS= " + nbSamples);
+			
+			// Information about the frequency of the PSG and the song are only available from YM5.
+			if (YMVersion >=5) {
+				PSGFrequency = SongUtil.readDWord(data, PSG_FREQUENCY_OFFSET);
+				replayFrequency =  SongUtil.readWord(data, REPLAY_FREQUENCY_OFFSET);
+				index = FRAME_LOOP_START_OFFSET_YM5;
+			}
+			
+			frameLoopStart = SongUtil.readDWord(data, index);
+			index += DWORD_SIZE;
+			
+			// Skips possible additional data.
+			if (YMVersion >= 5) {
+				int additionalDataSize = SongUtil.readWord(data, index);
+				index += WORD_SIZE + additionalDataSize;
+			}
+	
+			// Reads the samples, if any.
+			if (nbSamples > 0) {
+				samples = new short[nbSamples][];
+				
+				for (int i = 0 ; i < nbSamples; i++) {
+					int sampleSize = SongUtil.readDWord(data, index);
+					index += DWORD_SIZE;
+					samples[i] = new short[sampleSize];
+					
+					// Reads the sample data itself.
+					for (int j = 0 ; j < sampleSize; j++) {
+						// Make them use only 4 bits if they don't already, and unsigned.
+						int value = data[index++];
+						if (!areSamplesInST4BitsFormat) {
+							value >>>= 4;
+						}
+						if (areSamplesSigned) {
+							value += 8;
+						}
+						samples[i][j] = (short)value;
+					}
+					
+				}
+			}
+			
+			name = SongUtil.readNTString(data, index);
+			index += name.length() + 1;		// Go next to the field. +1 because there's a 0 ending the string.
+			author = SongUtil.readNTString(data, index);
+			index += author.length() + 1;
+			comments = SongUtil.readNTString(data, index);
+			registersBaseOffset = index + comments.length() + 1;
 		}
-		
-		name = SongUtil.readNTString(data, index);
-		index += name.length() + 1;		// Go next to the field. +1 because there's a 0 ending the string.
-		author = SongUtil.readNTString(data, index);
-		index += author.length() + 1;
-		comments = SongUtil.readNTString(data, index);
-		registersBaseOffset = index + comments.length() + 1;
 		currentFrame = 0;
+		durationInSeconds = (int)(nbFrames / replayFrequency);
 		currentSeekPosition = calculateSeekPosition();
 	}
 
@@ -526,7 +551,14 @@ public class YMSongReader implements ISongReader {
 							Context ctx = PlayMusicActivity.getContext();
 							Resources r = ctx.getResources();
 							//InputStream is = r.openRawResource(R.raw.syntaxdecomp);
-							InputStream is = r.openRawResource(R.raw.molusk);
+							//InputStream is = r.openRawResource(R.raw.molusk);
+							//InputStream is = r.openRawResource(R.raw.megapockolipse);
+							//InputStream is = r.openRawResource(R.raw.w3_3);
+							//InputStream is = r.openRawResource(R.raw.akscreen);
+							//InputStream is = r.openRawResource(R.raw.lethal1);
+							//InputStream is = r.openRawResource(R.raw.bioniccommando1);
+							//InputStream is = r.openRawResource(R.raw.arpy1);
+							InputStream is = r.openRawResource(R.raw.cybern3);
 							try {
 								dataByte = Util.readInputStream(is);
 							} catch (IOException e) {
