@@ -32,7 +32,6 @@ package aks.jnv.audio;
 
 import aks.jnv.reader.ISongReader;
 import aks.jnv.util.BinaryConstants;
-import android.util.Log;
 
 /**
  * Generator of the audio buffer from an AY processor.
@@ -154,10 +153,6 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	private float sampleAIndex;					// Index on the sample of channel A.
 	private float sampleBIndex;
 	private float sampleCIndex;
-
-	private float sampleAStep;
-	private float sampleBStep;
-	private float sampleCStep;
 	
 	private int sampleALength;
 	private int sampleBLength;
@@ -600,7 +595,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 			// TP = R8 (b7-b5) -> through prediv table.
 			// TC = R15.
 			int timerPredivisor = predivisorTable[(r8 >>> 5) & BinaryConstants.B_00000111];
-			float sampleFrequency = MFC_FREQUENCY / (float)timerPredivisor / (float)regs[15];
+			float sampleFrequency = MFC_FREQUENCY / (float)timerPredivisor / regs[15];
 			//Log.e("XXX", "r8 = " + r8 + ", timeprevidisor = " + timerPredivisor + ", r15 = " + regs[15] + ", Frequ = " + sampleFrequency + ", Period = " + 1.0f / sampleFrequency);
 			
 			float samplePeriod = sampleFrequency / sampleRate;

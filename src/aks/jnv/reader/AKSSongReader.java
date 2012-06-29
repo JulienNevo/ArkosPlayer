@@ -39,6 +39,8 @@ import aks.jnv.song.Song;
 /**
  * Reader of an AKS binary song (Arkos Tracker).
  * 
+ * This class is only boiler-plate at the moment.
+ * 
  * @author Julien Névo
  *
  */
@@ -50,8 +52,8 @@ public class AKSSongReader implements ISongReader {
 	/** The song being read.*/
 	private Song song;
 	
-	private short[] data;			// The data of the song.
-	private int dataPointer;		// Index to what is read in the data.
+	//private short[] data;			// The data of the song.
+	//private int dataPointer;		// Index to what is read in the data.
 
 	private int replayFrequency;	// The replay frequency of the song, in Hz (50hz, 25hz etc.).
 	private int PSGFrequency;		// The frequency of the sound processor for which the song has been made, in Hz.

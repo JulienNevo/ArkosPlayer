@@ -33,21 +33,12 @@ package aks.jnv.view;
 import java.io.File;
 
 import aks.jnv.R;
-import aks.jnv.audio.AudioService;
-import aks.jnv.audio.AudioServiceContainer;
-import aks.jnv.audio.AudioService.LocalBinder;
 import aks.jnv.file.FileManager;
 import android.app.ListActivity;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.database.DataSetObserver;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 /**
@@ -114,9 +105,9 @@ public class MusicChoiceActivity extends ListActivity {
 		super.onListItemClick(l, v, position, id);
 		
 		// Gets the item that was clicked.
-		Object o = this.getListAdapter().getItem(position);
-		SongItem si = (SongItem)o;
-		File songFile = si.songFile;
+		//Object o = this.getListAdapter().getItem(position);
+		//SongItem si = (SongItem)o;
+		//File songFile = si.songFile;
 		
 		//AudioService audioService = FirstActivity.getAudioService();
 		//AudioService audioService = AudioService.getInstance();

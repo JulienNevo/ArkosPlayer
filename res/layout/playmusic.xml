@@ -9,12 +9,13 @@
     >
 
     <!-- The 3D layout shown begin the "real" UI interface in the foreground. -->
-    <aks.jnv.view3d.EqualizerGLSurfaceView
+    <!-- REMOVED for now because it's really CPU consuming!! -->
+<!--     <aks.jnv.view3d.EqualizerGLSurfaceView
         android:id="@+id/playmusic3dview"
         android:orientation="vertical"
 	  	android:layout_width="match_parent"
 	  	android:layout_height="match_parent"
-        />
+        /> -->
 
 	<!-- The main UI Layout containing the song information and the buttons for the user interactions. -->
   	<LinearLayout
@@ -68,8 +69,6 @@
 	 	        />
 	 	    
 	 </LinearLayout>
-	 	
-	 	
 	  
 	 <!-- One RelativeLayout containing the SeekBar, forced to the bottom of the screen, -->
 	 <!-- as well as the two TextView set just above it, relative to it. -->

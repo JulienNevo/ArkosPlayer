@@ -31,12 +31,8 @@
 package aks.jnv.song;
 
 import java.io.File;
-import java.io.InputStream;
-
-import aks.jnv.reader.AKSSongReader;
 import aks.jnv.reader.ISongReader;
 import aks.jnv.reader.YMSongReader;
-import aks.jnv.util.Util;
 
 /**
  * Utility Class for Song. Most notably, the ability to get the type of a Song according to its raw (binary) data.

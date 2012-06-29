@@ -32,8 +32,6 @@ package aks.jnv.audio;
 
 import java.io.File;
 
-import aks.jnv.view.IMusicView;
-
 /**
  * Audio Service Interface used by the Audio Service, in order to be controlled by whatever uses the Service.
  * 

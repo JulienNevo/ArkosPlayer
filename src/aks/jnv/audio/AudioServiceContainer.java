@@ -30,13 +30,6 @@
 
 package aks.jnv.audio;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
-import android.util.Log;
-
 /**
  * Class that creates and possesses the Audio Service we used within the various activities.
  * 

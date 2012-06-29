@@ -55,7 +55,19 @@ public interface BinaryConstants {
 	public static int B_00001110 = 14;
 	public static int B_00001111 = 15;
 	public static int B_00010000 = 16;
-	
+	public static int B_00010001 = 17;
+	public static int B_00010010 = 18;
+	public static int B_00010011 = 19;
+	public static int B_00010100 = 20;
+	public static int B_00010101 = 21;
+	public static int B_00010110 = 22;
+	public static int B_00010111 = 23;
+	public static int B_00011000 = 24;
+	public static int B_00011001 = 25;
+	public static int B_00011010 = 26;
+	public static int B_00011011 = 27;
+	public static int B_00011100 = 28;
+	public static int B_00011101 = 29;
+	public static int B_00011110 = 30;
 	public static int B_00011111 = 31;
-	
 }

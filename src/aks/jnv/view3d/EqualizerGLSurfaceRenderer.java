@@ -36,7 +36,6 @@ import javax.microedition.khronos.opengles.GL10;
 import aks.jnv.reader.ISongReader;
 import android.opengl.GLU;
 import android.opengl.GLSurfaceView.Renderer;
-import android.util.Log;
 
 /**
  * The Renderer used to display the equalizer of the played song.
@@ -71,9 +70,9 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	private static final float EQUALIZER_BAR_X_SEPARATION = EqualizerBarShape.BAR_WIDTH + EqualizerBarShape.BAR_WIDTH * 0.5f;
 	
 	/** The view width. */
-	private int viewPortWidth = 1;
+	//private int viewPortWidth = 1;
 	/** The view height. */
-	private int viewPortHeight = 1;
+	//private int viewPortHeight = 1;
 	
 	/** Indicates if the shapes have been initialized. */
 	private boolean areShapesInitialized = false;
@@ -91,8 +90,8 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		viewPortWidth = width;
-		viewPortHeight = height;
+		//viewPortWidth = width;
+		//viewPortHeight = height;
 		
 		// TODO : calculates the size of the bar according to the screen size.
 		

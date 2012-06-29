@@ -42,7 +42,6 @@ import aks.jnv.song.Song;
 import aks.jnv.song.SongUtil;
 import aks.jnv.util.BinaryConstants;
 import aks.jnv.util.Util;
-import aks.jnv.view.FirstActivity;
 import aks.jnv.view.PlayMusicActivity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -311,7 +310,7 @@ public class YMSongReader implements ISongReader {
 			registersBaseOffset = index + comments.length() + 1;
 		}
 		currentFrame = 0;
-		durationInSeconds = (int)(nbFrames / replayFrequency);
+		durationInSeconds = (nbFrames / replayFrequency);
 		currentSeekPosition = calculateSeekPosition();
 	}
 

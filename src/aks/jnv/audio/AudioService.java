@@ -31,20 +31,15 @@
 package aks.jnv.audio;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import aks.jnv.R;
 import aks.jnv.file.FileManager;
 import aks.jnv.reader.ISongReader;
 import aks.jnv.song.SongUtil;
-import aks.jnv.view.FirstActivity;
-import aks.jnv.view.IMusicView;
+import aks.jnv.view.PlayMusicActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -113,6 +108,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	/**
 	 * Prevents the Clone implementations.
 	 */
+	@Override
 	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
@@ -212,10 +208,10 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 			// FIXME handle unknown format song.
 			songInformation = null;
 		} else {
-			Notification notification = new Notification(R.drawable.statusbaricon, "youpla", System.currentTimeMillis());
+			Notification notification = new Notification(R.drawable.ic_launcher, "Playing song.", System.currentTimeMillis());
 			
 			//Intent notificationIntent = new Intent(this, AudioService.class);
-			Intent notificationIntent = new Intent(this, FirstActivity.class);
+			Intent notificationIntent = new Intent(this, PlayMusicActivity.class);
 			
 			// Used when the user clicks on the notification.
 			//PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -281,37 +277,37 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	 * Shows a notification according to the state of the Service.
 	 * @param notificationState the state of the notification.
 	 */
-	private void showNotification(NotificationState notificationState) {
-		CharSequence text;
-		// Sets the icon, text and timestamp.
-		switch (notificationState) {
-			case running:
-				text = getText(R.string.running);
-				break;
-			case started:
-				text = getText(R.string.started);
-				break;
-			case stopped:
-				text = getText(R.string.stopped);
-				break;
-			default:
-				text = getText(R.string.unknown);
-				break;
-		}
-
-		Notification notification = new Notification(R.drawable.statusbaricon, text, System.currentTimeMillis());
-		
-		//Intent notificationIntent = new Intent(this, AudioService.class);
-		Intent notificationIntent = new Intent(this, FirstActivity.class);
-		
-		// Used when the user clicks on the notification.
-		//PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		
-		notification.setLatestEventInfo(getApplicationContext(), getText(R.string.notificationTitle), text, contentIntent);
-		
-		notificationManager.notify(NOTIFICATION_ID, notification);
-	}
+//	private void showNotification(NotificationState notificationState) {
+//		CharSequence text;
+//		// Sets the icon, text and timestamp.
+//		switch (notificationState) {
+//			case running:
+//				text = getText(R.string.running);
+//				break;
+//			case started:
+//				text = getText(R.string.started);
+//				break;
+//			case stopped:
+//				text = getText(R.string.stopped);
+//				break;
+//			default:
+//				text = getText(R.string.unknown);
+//				break;
+//		}
+//
+//		Notification notification = new Notification(R.drawable.ic_launcher, text, System.currentTimeMillis());
+//		
+//		//Intent notificationIntent = new Intent(this, AudioService.class);
+//		Intent notificationIntent = new Intent(this, PlayMusicActivity.class);
+//		
+//		// Used when the user clicks on the notification.
+//		//PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+//		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//		
+//		notification.setLatestEventInfo(getApplicationContext(), getText(R.string.notificationTitle), text, contentIntent);
+//		
+//		notificationManager.notify(NOTIFICATION_ID, notification);
+//	}
 
 	
 	

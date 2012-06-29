@@ -34,11 +34,8 @@ import aks.jnv.R;
 import aks.jnv.accelerometer.AccelerometerManager;
 import aks.jnv.accelerometer.IAccelerometerListener;
 import aks.jnv.audio.SongInformation;
-import aks.jnv.view3d.EqualizerGLSurfaceView;
 import android.content.Context;
-import android.opengl.Visibility;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
@@ -75,27 +72,39 @@ import android.widget.TextView;
 public class PlayMusicActivity extends ServiceActivity implements IAccelerometerListener {
 
 	/** String written when the song information is not available. */
-	private static final String UNKNOWN = "Unknown";
-	private static final String UNKNOWN_DURATION = "0:00";
+	//private static final String UNKNOWN = "Unknown";
+	//private static final String UNKNOWN_DURATION = "0:00";
 	
 	//private IMusicController musicController = MusicController.getInstance();
 	
+	/** Stores the song duration in seconds. */
+	private int songDurationInSeconds;
+	
+	/** The TextView where the song information are displayed. */
 	private TextView mainTextView;
 	
 //	private TextView authorTextView;
 //	private TextView commentsTextView;
 //	private TextView musicNameTextView;
 //	private TextView formatTextView;
+	/** The TextView that shows the current position in the song in seconds. */
 	private TextView currentPositionInSecondsTextView;
-	private TextView durationInSecondsTextView;
+	/** The TextView that shows the remaining duration in seconds. */
+	private TextView remainingDurationInSecondsTextView;
+	/** The SeekBar in order to see the position in the music, and to allow the user to choose where to go. */
 	private SeekBar seekBar;
 	
+	/** The Play button. It may be invisible. */
 	private Button playButton;
+	/** The Next Song button. */
 	private Button nextButton;
+	/** The Previous Song button. */
 	private Button previousButton;
+	/** The Pause button. It may be invisible. */
 	private Button pauseButton;
 	
-	private EqualizerGLSurfaceView glSurfaceView;
+	// FIXME Remove the GLView because it's really CPU consuming!
+	//private EqualizerGLSurfaceView glSurfaceView;
 	
 	static private Context theContext;					// TODO HACK FOR DEBUG (no file !)
 	static public Context getContext() {
@@ -107,9 +116,9 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playmusic);
 		
-		glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
-//		MyGLSurfaceRenderer renderer = new MyGLSurfaceRenderer();
-//		glSurfaceView.setRenderer(renderer);
+		// FIXME Remove the GLView because it's really CPU consuming!
+		//glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
+
 		
 		
 		theContext = this;								// TODO HACK FOR DEBUG (no file !)
@@ -123,7 +132,7 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 //		commentsTextView = (TextView)findViewById(R.id.commentstextplaymusicactivity);
 //		musicNameTextView = (TextView)findViewById(R.id.musicnametextplaymusicactivity);
 //		formatTextView = (TextView)findViewById(R.id.formattextplaymusicactivity);
-		durationInSecondsTextView = (TextView)findViewById(R.id.durationtextplaymusicactivity);
+		remainingDurationInSecondsTextView = (TextView)findViewById(R.id.durationtextplaymusicactivity);
 		currentPositionInSecondsTextView = (TextView)findViewById(R.id.currentpositiontextplaymusicactivity);
 		
 		playButton = (Button)findViewById(R.id.playbuttonplaymusicactivity);
@@ -155,7 +164,8 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 					audioService.play();
 					
 					// Tells the equalizer where to get its information.
-					glSurfaceView.setSongReader(audioService.getSongReader());
+					// FIXME Remove the GLView because it's really CPU consuming!
+					//glSurfaceView.setSongReader(audioService.getSongReader());
 				}
 			}
 		});
@@ -221,7 +231,7 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				int seekPosition = seekBar.getProgress();
-				currentPositionInSecondsTextView.setText(convertDurationToMinutes(seekPosition));
+				updatePositionTextViews(seekPosition, songDurationInSeconds);
 				audioService.seek(seekPosition);
 			}
 			
@@ -268,7 +278,8 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	
 	@Override
 	public void onAccelerationChanged(float x, float y, float z) {
-		glSurfaceView.onAccelerationChanged(x, y, z);
+		//FIXME Remove the GLView because it's really CPU consuming!
+		//glSurfaceView.onAccelerationChanged(x, y, z);
 	}
 	
 	/**
@@ -344,7 +355,6 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 
 	@Override
 	protected void updateSongInformationFomService() {
-		Log.e("XXX", "PlayMusicActivity::updateSongInformationFomService");
 		// Asks the service to give it the song information, if it exists.
 		SongInformation songInformation = (audioService != null) ? audioService.getSongInformation() : null;
 		if (songInformation != null) {
@@ -356,10 +366,10 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 //			commentsTextView.setText(comments);
 //			formatTextView.setText(format);
 			
-			int duration = songInformation.getSongDurationInSeconds();
-			seekBar.setMax(duration - 1);
+			songDurationInSeconds = songInformation.getSongDurationInSeconds();
+			seekBar.setMax(songDurationInSeconds - 1);
 			seekBar.setProgress(0);
-			durationInSecondsTextView.setText(convertDurationToMinutes(duration));
+			remainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(songDurationInSeconds));
 			
 			// Builds the main text.
 			StringBuffer sb = new StringBuffer();
@@ -384,11 +394,10 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	
 	@Override
 	protected void updateSongSeekPositionFomService() {
-		//Log.e("XXX", "PlayMusicActivity::updateSongSeekFomService");
 		// Asks the service to give the current seek position.
 		int seekPosition = audioService.getCurrentSeekPosition();
 		seekBar.setProgress(seekPosition);
-		currentPositionInSecondsTextView.setText(convertDurationToMinutes(seekPosition));
+		updatePositionTextViews(seekPosition, songDurationInSeconds);
 	}
 	
 	
@@ -402,12 +411,25 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 //		authorTextView.setText(UNKNOWN);
 //		commentsTextView.setText(UNKNOWN);
 //		formatTextView.setText(UNKNOWN);
-		currentPositionInSecondsTextView.setText(UNKNOWN_DURATION);
-		durationInSecondsTextView.setText(UNKNOWN_DURATION);
+		updatePositionTextViews(0, 0);
 		seekBar.setMax(0);
 		seekBar.setProgress(0);
 	}
 	
+	/**
+	 * Updates the position TextViews according to the given seek position. The song duration must have been set before.
+	 * @param seekPosition the Seek position in seconds.
+	 * @param songDuration the song duration in seconds.
+	 */
+	private void updatePositionTextViews(int seekPosition, int songDuration) {
+		currentPositionInSecondsTextView.setText(convertDurationToMinutes(seekPosition));
+		int remainingDuration = songDuration - seekPosition;
+		if (remainingDuration < 0) {
+			remainingDuration = 0;
+		}
+		remainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(remainingDuration));
+	}
+
 	/**
 	 * Converts seconds to minutes.
 	 * @param duration the duration
