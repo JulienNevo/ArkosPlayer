@@ -43,6 +43,7 @@ import aks.jnv.util.BinaryConstants;
  * We consider the output to be always 16 bits, stereo.
  *
  * TODO create a Stop in order to clean the JNI.
+ * - Clears all this code as all as been transfered to the C++.
  * 
  * @author Julien Névo
  *
@@ -61,11 +62,13 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	public native void generateBufferJNI(short[] buffer);
 	
 	/**
-	 * Initializes the generator.
+	 * Initializes the generator. The data of the song is also given to the JNI, so that the JNI doesn't have to request data
+	 * periodically to Java (performance crusher).
 	 * @param replayFrequency the replay frequency.
 	 * @param PSGFrequency the PSG frequency.
+	 * @param songData the data of the song.
 	 */
-	public native void initializeGeneratorJNI(int replayFrequency, int PSGFrequency);
+	public native void initializeGeneratorJNI(int replayFrequency, int PSGFrequency, short[] songData);
 	
 	
 	
@@ -227,7 +230,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 //        sampleBStep = stepCounter;
 //        sampleCStep = stepCounter;
         
-        initializeGeneratorJNI(replayFrequency, PSGFrequency);
+        initializeGeneratorJNI(replayFrequency, PSGFrequency, songReader.getRawData());
 	}
 
 

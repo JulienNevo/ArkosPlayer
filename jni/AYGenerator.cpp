@@ -70,7 +70,8 @@ const static int mVolumesBase[] = { 0, 231, 695, 1158, 2084, 2779, 4168, 6716, 8
 const static int NB_VOLUMES = 16;
 
 // FIXME A Test.
-static short mRegsTry[] = { 0, 1, 2, 3, 4, 5, 10, 0x38, 10, 11, 12, 0, 0, 0, 0, 0 };
+//static short mRegsTry[] = { 0, 1, 2, 3, 4, 5, 10, 0x38, 10, 11, 12, 0, 0, 0, 0, 0 };
+static short* mRegs;
 
 // Volumes to be decreased according to the output (8/16 bits) but also the periodRatio, so that we don't have to divide the added "partial" volumes.
 static float* mVolumes = 0;
@@ -114,6 +115,8 @@ float mSampleAPeriod;					// Period of the samples.
 float mSampleBPeriod;
 float mSampleCPeriod;
 
+short* mSongData;
+
 //JNIEnv* mEnv;
 //jobject mThis;
 
@@ -149,12 +152,21 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
    return JNI_VERSION_1_6;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_aks_jnv_audio_AYBufferGenerator_initializeGeneratorJNI(JNIEnv* env, jobject thiz, jint replayFrequency, jint PSGFrequency)
+extern "C" JNIEXPORT void JNICALL Java_aks_jnv_audio_AYBufferGenerator_initializeGeneratorJNI(JNIEnv* env, jobject thiz, jint replayFrequency, jint PSGFrequency, jshortArray songData)
 {
+	mRegs = new short[16];
 	//jclass mClass = mEnv->FindClass("aks.jnv.audio.AYBufferGenerator");
 
 	//mEnv = env;
 	//mThis = thiz;
+
+	// Gets the song data.
+	jboolean booleanTrue = true;
+	mSongData = env->GetShortArrayElements(songData, &booleanTrue);
+	// TODO : how to release it ?
+
+	//jint size = env->GetArrayLength(buffer);
+
 
 	mReplayFrequency = replayFrequency;
 	mPSGFrequency = PSGFrequency;
@@ -315,10 +327,15 @@ void generateAudioBuffer(JNIEnv* env, jobject thiz, short* buffer, int bufferSiz
 
 		// Calculates if we need new PSG registers according to the replay frequency of the song.
 		if (++mPlayerPeriodCounter > mPlayerPeriod) {
-			jshortArray array = (jshortArray)env->CallObjectMethod(thiz, mMethodIdGetNextRegistersFromJNI);
-			jshort* regs = env->GetShortArrayElements(array, 0);
-			interpretRegisters(regs);
-			env->ReleaseShortArrayElements(array, regs, 0);
+			// Calls the JAVA getNextRegistersFromJNI method from AYBufferGenerator and retrieves its short array.
+			// Sadly, all the performance given by JNI is destroyed by these calls.
+			getNextRegisters();
+			interpretRegisters(mRegs);
+
+//			jshortArray array = (jshortArray)env->CallObjectMethod(thiz, mMethodIdGetNextRegistersFromJNI);
+//			jshort* regs = env->GetShortArrayElements(array, 0);
+//			interpretRegisters(regs);
+//			env->ReleaseShortArrayElements(array, regs, 0);
 
 			mPlayerPeriodCounter = 0;
 		}
@@ -502,6 +519,39 @@ void generateAudioBuffer(JNIEnv* env, jobject thiz, short* buffer, int bufferSiz
 		// Write the output data in the buffer, as 16 bits stereo values.
 		buffer[i++] = (short)(outputVolumeASum + OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum);
 		buffer[i++] = (short)(OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum + outputVolumeCSum);
+	}
+}
+
+
+int currentFrame = 0;
+int nbFrames = 17282;
+int frameLoopStart = 0;
+int registersBaseOffset = 112;
+
+void getNextRegisters() {
+	int nbRegisters = 15;
+	bool isInterleaved = true;
+
+	if (isInterleaved) {
+		// V0R0,V1R0,V2R0,....,VnR0
+		// V0R1,V1R1,V2R1,....,VnR1
+		int index = registersBaseOffset + currentFrame;
+		for (int i = 0; i < nbRegisters; i++) {
+			int temp = index + i * nbFrames;
+			mRegs[i] = mSongData[temp];
+		}
+	} else {
+		// V0R0,V0R1,V0R2,....,V0R14,V0R15
+		// V1R0,V1R1,V1R2,....,V1R14,V1R15
+		int index = registersBaseOffset + currentFrame * nbRegisters;
+		for (int i = 0; i < nbRegisters; i++) {
+			mRegs[i] = mSongData[index + i];
+		}
+	}
+
+	// Next frame.
+	if (++currentFrame > nbFrames) {
+		currentFrame = frameLoopStart;
 	}
 }
 

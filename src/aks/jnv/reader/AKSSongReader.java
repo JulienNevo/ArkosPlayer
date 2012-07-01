@@ -197,6 +197,12 @@ public class AKSSongReader implements ISongReader {
 		return 0;
 	}
 
+	@Override
+	public short[] getRawData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 
 

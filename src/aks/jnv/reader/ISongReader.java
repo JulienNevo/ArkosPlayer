@@ -54,7 +54,13 @@ public interface ISongReader {
 	 * Returns the registers of the next frame of the song.
 	 * @return the registers of the next frame of the song.
 	 */
-	short[] getNextRegisters();
+	short[] getNextRegisters();	// FIXME REMOVE.
+	
+	/**
+	 * Returns the data of the song.
+	 * @return the data of the song.
+	 */
+	short[] getRawData();
 	
 	/**
 	 * Seeks to the given second in the song.

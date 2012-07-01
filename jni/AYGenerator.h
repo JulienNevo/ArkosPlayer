@@ -2,8 +2,14 @@
  * AYGenerator.h
  *
  *  Created on: Jun 30, 2012
- *      Author: julien
+ *      Author: Julien Névo.
+ *
+ *
+ *
+ * TODO Destroy the created elements.
  */
+
+
 
 #ifndef AYGENERATOR_H_
 #define AYGENERATOR_H_
@@ -18,6 +24,7 @@ void generateVolumes();
 
 void generateAudioBuffer(JNIEnv* env, jobject thiz, short* buffer, int bufferSize);
 void interpretRegisters(short* regs);
+void getNextRegisters();
 
 //class AYGeneratorJNI {
 //

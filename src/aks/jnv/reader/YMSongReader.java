@@ -432,6 +432,10 @@ public class YMSongReader implements ISongReader {
 		return channelsUsingNoise;
 	}
 
+	@Override
+	public short[] getRawData() {
+		return data;
+	}
 	
 	
 	// ***************************************
@@ -587,6 +591,8 @@ public class YMSongReader implements ISongReader {
 		
 		return result ? data : null;
 	}
+
+
 
 
 
