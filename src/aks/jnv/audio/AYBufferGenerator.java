@@ -41,12 +41,36 @@ import aks.jnv.util.BinaryConstants;
  * the song.
  * 
  * We consider the output to be always 16 bits, stereo.
+ *
+ * TODO create a Stop in order to clean the JNI.
  * 
  * @author Julien Névo
  *
  */
 public class AYBufferGenerator implements IAudioBufferGenerator {
 
+	/** Loads the Arkos Player JNI library. */
+	static {
+		System.loadLibrary("ArkosPlayer");
+	}
+	
+	/**
+	 * Generates the audio by filling the given buffer, through a JNI call.
+	 * @param buffer the buffer to fill.
+	 */
+	public native void generateBufferJNI(short[] buffer);
+	
+	/**
+	 * Initializes the generator.
+	 * @param replayFrequency the replay frequency.
+	 * @param PSGFrequency the PSG frequency.
+	 */
+	public native void initializeGeneratorJNI(int replayFrequency, int PSGFrequency);
+	
+	
+	
+	
+	
 	/** The Reader from which to get new registers when needed. */
 	private ISongReader songReader;
 	
@@ -193,10 +217,6 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 //        	playerPeriod = 1;
 //         }
 		
-		// FIXME TRY
-		periodRatio *= 1.5;			// Frequency increase.
-		playerPeriod *= 0.65;		// Speed increase.
-		
         playerPeriodCounter = playerPeriod + 1;	// Forces the getting of registers on first pass.
         
         generateVolumes();
@@ -206,6 +226,8 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 //        sampleAStep = stepCounter;
 //        sampleBStep = stepCounter;
 //        sampleCStep = stepCounter;
+        
+        initializeGeneratorJNI(replayFrequency, PSGFrequency);
 	}
 
 
@@ -342,11 +364,31 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	// ***************************************
 	// Main generation method
 	// ***************************************
-
+	
+	/**
+	 * Called from JNI in order to get the next registers from the SongReader.
+	 * TODO : have this method being Override.
+	 * @param regs The buffer to fill.
+	 */
+	public short[] getNextRegistersFromJNI() {
+		return songReader.getNextRegisters();
+	}
+	//********** FIXME A TEST.
+//	public short getNextRegistersFromJNI() {
+//		//return songReader.getNextRegisters();
+//		return 2;
+//	}
+	
 	@Override
 	public void generateAudioBuffer(short[] buffer) {
 		
 		if (songReader == null) {
+			return;
+		}
+		
+		generateBufferJNI(buffer);
+		
+		if (true) {			//FIXME ******************
 			return;
 		}
 		
@@ -360,7 +402,8 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 //			return;
 //		}
 
-		for (int i = 0; i < bufferSize; ++i) {
+		int i = 0;
+		while (i < bufferSize) {
 			
 			// Calculates if we need new PSG registers according to the replay frequency of the song.
 			if (++playerPeriodCounter > playerPeriod) {

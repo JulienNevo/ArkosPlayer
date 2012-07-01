@@ -47,6 +47,18 @@ import android.media.AudioTrack;
  */
 public class AudioRenderer extends Thread {
 
+//	/** Loads the Arkos Player JNI library. */
+//	static {
+//		System.loadLibrary("ArkosPlayer");
+//	}
+//	
+//	/**
+//	 * Generates the audio by filling the given buffer, through a JNI call.
+//	 * @param buffer the buffer to fill.
+//	 */
+//	public native void generateBufferJNI(short[] buffer);
+	
+	
 	/** The Audio Buffer Generator that will fill the buffer before we send it to the sound card. */
 	private IAudioBufferGenerator audioBufferGenerator;
 	
@@ -245,7 +257,9 @@ public class AudioRenderer extends Thread {
 			return;
 		}
 		
+		// FIXME JNI TEST
 		audioBufferGenerator.generateAudioBuffer(outputBuffer);
+//		generateBufferJNI(outputBuffer);
 	}
 	
 }

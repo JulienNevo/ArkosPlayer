@@ -144,6 +144,9 @@ public class YMSongReader implements ISongReader {
 	/** The bits of the channels using the noise (bit 0 to 1 = noise on channel A etc.). */
 	private int channelsUsingNoise;
 	
+	/** The PSG registers filled when reading new data. We always use the same buffer.*/
+	private short[] regs;
+	
 	/**
 	 * Constructor.
 	 * @param song The YMSong this reader must read.
@@ -329,7 +332,10 @@ public class YMSongReader implements ISongReader {
 	
 	@Override
 	public short[] getNextRegisters() {
-		short[] regs = new short[NB_REGISTERS_FROM_YM4];	// Uses the biggest number of registers. TODO : always use the same buffer instead of creating it?
+		/// Creates the register buffer if it doesn't already exist.
+		if (regs == null) {
+			regs = new short[NB_REGISTERS_FROM_YM4];
+		}
 		
 		int nbRegisters = (YMVersion > 3) ? NB_REGISTERS_FROM_YM4 : NB_REGISTERS_TILL_YM3;
 		
