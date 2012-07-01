@@ -144,6 +144,9 @@ public class YMSongReader implements ISongReader {
 	/** The bits of the channels using the noise (bit 0 to 1 = noise on channel A etc.). */
 	private int channelsUsingNoise;
 	
+	/** The registers to be played. They evolve according to the music replayFrequency, not at each frame. */
+	private short[] regs = new short[NB_REGISTERS_FROM_YM4];	// Uses the biggest number of registers.
+	
 	/**
 	 * Constructor.
 	 * @param song The YMSong this reader must read.
@@ -329,8 +332,6 @@ public class YMSongReader implements ISongReader {
 	
 	@Override
 	public short[] getNextRegisters() {
-		short[] regs = new short[NB_REGISTERS_FROM_YM4];	// Uses the biggest number of registers. TODO : always use the same buffer instead of creating it?
-		
 		int nbRegisters = (YMVersion > 3) ? NB_REGISTERS_FROM_YM4 : NB_REGISTERS_TILL_YM3;
 		
 		if (isInterleaved) {

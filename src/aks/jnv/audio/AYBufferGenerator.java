@@ -189,23 +189,10 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 		periodRatio = PSGFrequency / sampleRate / 8.0f;
 		stepCounter = periodRatio;
 		playerPeriod = (sampleRate / replayFrequency) - 1;
-//        if (playerPeriod < 1) {
-//        	playerPeriod = 1;
-//         }
-		
-		// FIXME TRY
-		periodRatio *= 1.5;			// Frequency increase.
-		playerPeriod *= 0.65;		// Speed increase.
 		
         playerPeriodCounter = playerPeriod + 1;	// Forces the getting of registers on first pass.
         
         generateVolumes();
-        
-        
-        // FIXME Not sure.
-//        sampleAStep = stepCounter;
-//        sampleBStep = stepCounter;
-//        sampleCStep = stepCounter;
 	}
 
 
@@ -360,7 +347,8 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 //			return;
 //		}
 
-		for (int i = 0; i < bufferSize; ++i) {
+		int i = 0;
+		while (i < bufferSize) {
 			
 			// Calculates if we need new PSG registers according to the replay frequency of the song.
 			if (++playerPeriodCounter > playerPeriod) {
@@ -546,11 +534,6 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 				}
 			}
 		
-			// FIXME HACK because the volume seems no more related to the cursor !
-//			outputVolumeASum *= 0.1;
-//			outputVolumeBSum *= 0.1;
-//			outputVolumeCSum *= 0.1;
-
             // Write the output data in the buffer, as 16 bits stereo values.
 			buffer[i++] = (short)(outputVolumeASum + OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum);
 			buffer[i++] = (short)(OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum + outputVolumeCSum);
