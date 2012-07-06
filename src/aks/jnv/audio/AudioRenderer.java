@@ -54,7 +54,7 @@ public class AudioRenderer extends Thread {
 	private AudioTrack audioTrack;
 	
 	/** Sample rate in Hz. */
-	private int sampleRate = 44100; //16000
+	private int sampleRate = 22050; //16000		FIXME: CPU doesn't lower even at 11025... ????
 	
 	/** Bit rate (8, 16 bits). */
 	//private int bitRate = 16;

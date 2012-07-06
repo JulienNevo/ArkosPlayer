@@ -32,6 +32,7 @@ package aks.jnv.audio;
 
 import aks.jnv.reader.ISongReader;
 import aks.jnv.util.BinaryConstants;
+import android.util.Log;
 
 /**
  * Generator of the audio buffer from an AY processor.
@@ -76,7 +77,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	private static final int MFC_FREQUENCY = 2457600;
 	
 	/** Pre-divisor table used for to know the replay frequency of the samples. */
-	private static int[] predivisorTable = new int[] { 0, 4, 10, 16, 50, 64, 100, 200 };
+	private static final int[] predivisorTable = new int[] { 0, 4, 10, 16, 50, 64, 100, 200 };
 	
     private boolean isMixerSoundAOpen;									// True is Mixer bit to 0 ! Which means "open".
 	private boolean isMixerSoundBOpen;
@@ -105,6 +106,9 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	private boolean soundStateA = true;				// High state (true) or Low state (false), according only to the square signal being produced, not the mixer.
 	private boolean soundStateB = true;
 	private boolean soundStateC = true;
+	//private int maskSoundStateA = 65535;
+	//private int maskSoundStateB = 65535;
+	//private int maskSoundStateC = 65535;
 
 	private static int randomSeed = 0x12345678;
 	private int volumeNoise = 0;					// Volume calculated randomly, used for the Noise. We keep it here to use it from a buffer to the next.
@@ -118,8 +122,8 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 
 	// Raw volumes level.
 	private static int[] volumesBase = { 0, 231, 695, 1158, 2084, 2779, 4168, 6716, 8105, 13200, 18294, 24315, 32189, 40757, 52799, 65535 };
-	// Volumes to be decreased according to the output (8/16 bits) but also the periodRatio, so that we don't have to divise the added "partial" volumes.
-	private static float[] volumes;
+	// Volumes to be decreased according to the output (8/16 bits) but also the periodRatio, so that we don't have to divide the added "partial" volumes.
+	private static int[] volumes;
 
 
 	private static int[][] hardwareCurves;								// Points to an array of volumes, for one HardwareCurve given.
@@ -187,8 +191,14 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 		this.PSGFrequency = songReader.getPSGFrequency();
 
 		periodRatio = PSGFrequency / sampleRate / 8.0f;
+		//TEST
+		//periodRatio /= 2;
+		
 		stepCounter = periodRatio;
 		playerPeriod = (sampleRate / replayFrequency) - 1;
+		
+
+		//playerPeriod /= 2;
 		
         playerPeriodCounter = playerPeriod + 1;	// Forces the getting of registers on first pass.
         
@@ -219,7 +229,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	 */
 	private void generateVolumes() {
 		int nbVolumes = volumesBase.length;
-		volumes = new float[nbVolumes];
+		volumes = new int[nbVolumes];
 
 		float maxVolume = Short.MAX_VALUE; // (BitRate == 8 ? 127 : 32767);
         maxVolume *= OUTPUT_VOLUME_RATE_STEREO_CHANNEL_AC;  // The max volume is divised by the volume rate of the two louder channels (A and C).
@@ -228,7 +238,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
         float bitRateRatio = volumesBase[nbVolumes - 1] / maxVolume;
 
 		for (int i = 0; i < nbVolumes; ++i) {
-			volumes[i] = (volumesBase[i] / bitRateRatio / periodRatio);
+			volumes[i] = (int)(volumesBase[i] / bitRateRatio / periodRatio);
 		}
 		
 	}
@@ -341,11 +351,6 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 		float outputVolumeASum, outputVolumeBSum, outputVolumeCSum;
 		float outputVolumeA, outputVolumeB, outputVolumeC;
 		int bufferSize = buffer.length;
-		
-		// FIXME TEST.
-//		if (true) {
-//			return;
-//		}
 
 		int i = 0;
 		while (i < bufferSize) {
@@ -372,20 +377,23 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 				outputVolumeCSum = 0;
 				stepCounter = periodRatio;
 			}
-
+			
 			while (stepCounter > 0) {
 				// Manage Frequencies
 				if (++periodCounterA >= periodA) {
+					//maskSoundStateA ^= 65535;
 					soundStateA = !soundStateA;
 					periodCounterA = 0;
 				}
 				
 				if (++periodCounterB >= periodB) {
+					//maskSoundStateB ^= 65535;
 					soundStateB = !soundStateB;
 					periodCounterB = 0;
 				}
 				
 				if (++periodCounterC >= periodC) {
+					//maskSoundStateC ^= 65535;
 					soundStateC = !soundStateC;
 					periodCounterC = 0;
 				}
@@ -406,6 +414,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 					if (isMixerSoundAOpen) {
 						// Mixer is on. The volume depends on the High/Low shelf of the software envelope, but the high shelf is defined by the Hardware Curve.
 						cVolumeA = (soundStateA ? hardwareCurves[hardwareEnveloppe][hardwareCurveCounter] : 0);
+						//cVolumeA = maskSoundStateA & hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
 					} else {
 						// Mixer is off. The volume is only given by the Hardware Curve. No more High/low shelf.
 						cVolumeA = hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
@@ -416,24 +425,25 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 					if (isMixerSoundAOpen) {
 						// Mixer On.
 						cVolumeA = (soundStateA ? volumeA : 0);
+						//cVolumeA = maskSoundStateA & volumeA;
 					} else {
 						// If Mixer is off, the volume is the only given, and doesn't move (useful for Noise with no sound, but also for samples (not used here) !)
 						cVolumeA = volumeA;
 					}
 				}
 
-
-
 				// Manage Volume B.
 				if (isHardwareEnvelopeUsedOnB) {
 					if (isMixerSoundBOpen) {
 						cVolumeB = (soundStateB ? hardwareCurves[hardwareEnveloppe][hardwareCurveCounter] : 0);
+						//cVolumeB = maskSoundStateB & hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
 					} else {
 						cVolumeB = hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
 					}
 				} else {
 					if (isMixerSoundBOpen) {
 						cVolumeB = (soundStateB ? volumeB : 0);
+						//cVolumeB = maskSoundStateB & volumeB;
 					} else {
 						cVolumeB = volumeB;
 					}
@@ -445,12 +455,14 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 				if (isHardwareEnvelopeUsedOnC) {
 					if (isMixerSoundCOpen) {
 						cVolumeC = (soundStateC ? hardwareCurves[hardwareEnveloppe][hardwareCurveCounter] : 0);
+						//cVolumeC = maskSoundStateC & hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
 					} else {
 						cVolumeC = hardwareCurves[hardwareEnveloppe][hardwareCurveCounter];
 					}
 				} else {
 					if (isMixerSoundCOpen) {
 						cVolumeC = (soundStateC ? volumeC : 0);
+						//cVolumeC = maskSoundStateC & volumeC;
 					} else {
 						cVolumeC = volumeC;
 					}
@@ -468,17 +480,16 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 					}
 					
 					// Noise on Channel A, B, C ?
-					// FIXME could be better.
-					if (isMixerNoiseAOpen) {
-						cVolumeA = (volumeNoise > cVolumeA ? cVolumeA : volumeNoise);
+					if ((isMixerNoiseAOpen) && (volumeNoise > cVolumeA)) {
+						cVolumeA = volumeNoise;
 					}
 					
-					if (isMixerNoiseBOpen) {
-						cVolumeB = (volumeNoise > cVolumeB ? cVolumeB : volumeNoise);
+					if ((isMixerNoiseBOpen) && (volumeNoise > cVolumeB)) {
+						cVolumeB = volumeNoise;
 					}
 					
-					if (isMixerNoiseCOpen) {
-						cVolumeC = (volumeNoise > cVolumeC ? cVolumeC : volumeNoise);
+					if ((isMixerNoiseCOpen) && (volumeNoise > cVolumeC)) {
+						cVolumeC = volumeNoise;
 					}
 				}
 
@@ -538,6 +549,8 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 			buffer[i++] = (short)(outputVolumeASum + OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum);
 			buffer[i++] = (short)(OUTPUT_VOLUME_RATE_STEREO_CHANNEL_DIFFERENCE * outputVolumeBSum + outputVolumeCSum);
 		}
+		
+		//Log.e("XXX", "maxtest = "+ test);
 	}
 	
 	/**
