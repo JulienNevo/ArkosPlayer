@@ -24,16 +24,25 @@
         </activity>
         
         <activity
-            android:name=".view.MusicChoiceActivity"
+            android:name=".view.MusicChoiceActivityOLD"
             android:screenOrientation="portrait" />
         
         <activity
-            android:name=".view.PlayMusicActivity"
+            android:name=".view.MusicSelectionActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".view.PlayMusicActivity"
+            android:screenOrientation="portrait" >
+            <!-- <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter> -->
         </activity>
 
     </application>

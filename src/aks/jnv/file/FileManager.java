@@ -46,8 +46,11 @@ public class FileManager {
 	/** The music list found. May be Null or empty. */
 	private static File[] musicList;
 	
-	/** Folder inside the DIRECTORY_MUSIC where are the music.*/
-	//public static final String YM_FOLDER = "/YM/"; 
+	/** Folder we are the music. */
+	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
+
+	/** Dot character such as the ones found in file extensions. */
+	private static final char DOT_CHAR = '.'; 
 	
 	/**
 	 * Indicates if an external storage is available for reading (or read/write).
@@ -108,5 +111,46 @@ public class FileManager {
 	 */
 	public static File[] getMusicList() {
 		return musicList;
+	}
+
+	/**
+	 * Returns the music short name from its full path. Extension removed at will.
+	 * @param path The song full path.
+	 * @param keepExtension True to keep the extension.
+	 * @return The music short name.
+	 */
+	public static String getMusicShortName(String path, boolean keepExtension) {
+		int lastSlashIndex = path.lastIndexOf(File.separatorChar);
+		
+		// Finds the last slash, and skips it.
+		int firstIndex = (lastSlashIndex >= 0) ? (lastSlashIndex + 1) : 0;
+
+		int lastIndexExcluded;
+		if (keepExtension) {
+			// If the extension is kept, gets the remaining of the String. 
+			lastIndexExcluded = path.length();
+		} else {
+			// If the extension is removed, finds the last dot.
+			lastIndexExcluded = path.lastIndexOf(DOT_CHAR);
+			// Security in case the dot isn't found (also takes care of the (rather unlikely) possibility that the last dot is before the last slash).
+			if (lastIndexExcluded < firstIndex) {
+				lastIndexExcluded = path.length();
+			}
+		}
+		
+		return path.substring(firstIndex, lastIndexExcluded);
+	}
+
+	/**
+	 * Returns the string without the extension, if any.
+	 * @param filename The filename.
+	 * @return The string without the extension, if any.
+	 */
+	public static String removeExtension(String filename) {
+		int dotIndex = filename.lastIndexOf(DOT_CHAR);
+		if (dotIndex < 0) {
+			dotIndex = filename.length();
+		}
+		return filename.substring(0, dotIndex);
 	}
 }

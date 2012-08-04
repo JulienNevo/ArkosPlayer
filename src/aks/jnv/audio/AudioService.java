@@ -76,6 +76,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	/** SongReader given to the AudioRenderer. It is however stored only to get easily the value for the equalizer. */
 	private ISongReader songReader;
+
+	/** The song to play or being played. */
+	private File mSong;
 	
 	/** Number of the song currently played. -1 means that we never played one. */
 	//private int songNumber = -1;
@@ -329,8 +332,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public void play() {
-		playSong(null);
-		
+		playSong(mSong);
 	}
 
 	@Override
@@ -341,8 +343,8 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public boolean setSong(File song) {
-		// TODO Auto-generated method stub
-		return false;
+		mSong = song;
+		return true;
 	}
 
 

@@ -31,20 +31,14 @@
 package aks.jnv.reader;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import aks.jnv.R;
 import aks.jnv.audio.ISeekPositionObserver;
 import aks.jnv.song.Song;
 import aks.jnv.song.SongUtil;
 import aks.jnv.util.BinaryConstants;
 import aks.jnv.util.Util;
-import aks.jnv.view.PlayMusicActivity;
-import android.content.Context;
-import android.content.res.Resources;
 import android.util.Log;
 
 /**
@@ -55,6 +49,9 @@ import android.util.Log;
  */
 public class YMSongReader implements ISongReader {
 
+	/** The debug tag of this class. */
+	private static final String DEBUG_TAG = "YMSongReader";
+	
 	private static final int ATARI_ST_PSG_FREQUENCY = 2000000;
 	private static final int DEFAULT_PSG_FREQUENCY = ATARI_ST_PSG_FREQUENCY;		// Default value in case the PSG frequency isn't given.
 	private static final int DEFAULT_REPLAY_FREQUENCY = 50;		// Default value in case the replay frequency isn't given.
@@ -262,7 +259,6 @@ public class YMSongReader implements ISongReader {
 			areSamplesInST4BitsFormat = ((songAttributes & 4) != 0);
 			
 			nbSamples = SongUtil.readWord(data, NB_DIGIDRUMS_OFFSET);
-			//Log.e("XXX", "NB DIGIDRUMS= " + nbSamples);
 			
 			// Information about the frequency of the PSG and the song are only available from YM5.
 			if (YMVersion >=5) {
@@ -544,35 +540,15 @@ public class YMSongReader implements ISongReader {
 		
 		// First checks if the input stream is a LHA file.
 		byte[] dataByte = null;
-						// FIXME HACK for debug (no file !)
-						if (musicFile == null) {
-							Log.e("XXX", "YMSongReader::doesRawDataFit : null");
-							//Context ctx = FirstActivity.getContext();
-							Context ctx = PlayMusicActivity.getContext();
-							Resources r = ctx.getResources();
-							//InputStream is = r.openRawResource(R.raw.syntaxdecomp);
-							//InputStream is = r.openRawResource(R.raw.molusk);
-							//InputStream is = r.openRawResource(R.raw.megapockolipse);
-							//InputStream is = r.openRawResource(R.raw.w3_3);
-							//InputStream is = r.openRawResource(R.raw.akscreen);
-							//InputStream is = r.openRawResource(R.raw.lethal1);
-							//InputStream is = r.openRawResource(R.raw.bioniccommando1);
-							//InputStream is = r.openRawResource(R.raw.arpy1);
-							InputStream is = r.openRawResource(R.raw.cybern3);
-							try {
-								dataByte = Util.readInputStream(is);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-							Log.e("XXX", "YMSongReader::doesRawDataFit : size = " + dataByte.length);
-							return Util.byteArrayToShortArray(dataByte);
-						}
-		
 		
 		try {
 			dataByte = Util.unpackLHAFile(musicFile);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(DEBUG_TAG, e.getMessage());
+		}
+		
+		if (dataByte == null) {
+			return null;
 		}
 		
 		short[] data = Util.byteArrayToShortArray(dataByte);

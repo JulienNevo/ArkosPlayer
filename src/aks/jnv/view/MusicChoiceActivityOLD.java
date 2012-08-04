@@ -44,6 +44,8 @@ import android.widget.ListView;
 /**
  * TODO :
  * 
+ * - DEPRECATED. REMOVE.
+ * 
  * - Make this class derives from a ServiceListActivity, or a ServiceActivity that would have a
  *   List...
  * 
@@ -51,7 +53,7 @@ import android.widget.ListView;
  * @author Julien Névo
  *
  */
-public class MusicChoiceActivity extends ListActivity {
+public class MusicChoiceActivityOLD extends ListActivity {
 
 //	private AudioService audioService = null;
 //	private ServiceConnection connection = new ServiceConnection() {
@@ -124,7 +126,7 @@ public class MusicChoiceActivity extends ListActivity {
 //		((IMusicController)audioService).setSong(songFile);
 		
 		Bundle bundle = new Bundle();
-		Intent intent = new Intent(MusicChoiceActivity.this, PlayMusicActivity.class);
+		Intent intent = new Intent(MusicChoiceActivityOLD.this, PlayMusicActivity.class);
 		intent.putExtras(bundle);
 		startActivity(intent);
 	}

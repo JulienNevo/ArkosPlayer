@@ -42,6 +42,8 @@ import aks.jnv.reader.YMSongReader;
  */
 public class SongUtil {
 
+	/** The YM extension. */
+	public static final String EXTENSION_YM = ".ym";
 	
 	
 	/**
@@ -149,5 +151,25 @@ public class SongUtil {
 	public static int readDWord(short[] data, int index) {
 		return (data[index++] << 24) + (data[index++] << 16) + (data[index++] << 8) + data[index];
 	}
+	
+	
+	/**
+	 * Indicates what format is the given file. It may be a music file or not!
+	 * @param file The file.
+	 * @return The song format, if any.
+	 */
+	public static SongFormat getFileFormat(File file) {
+		SongFormat result = SongFormat.unknown;
+		
+		// FIXME For now, very simple detection: with the extension!
+		if (file.getAbsolutePath().toLowerCase().endsWith(EXTENSION_YM)) {
+			result = SongFormat.YM;
+		}
+		
+		return result;
+	}
+	
+	
+	
 	
 }

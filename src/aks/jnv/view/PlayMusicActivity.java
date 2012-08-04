@@ -30,6 +30,8 @@
 
 package aks.jnv.view;
 
+import java.io.File;
+
 import aks.jnv.R;
 import aks.jnv.accelerometer.AccelerometerManager;
 import aks.jnv.accelerometer.IAccelerometerListener;
@@ -50,9 +52,10 @@ import android.widget.TextView;
  * 
  * TODO :
  * - Crash if pause then play.
- * - Wrong frequency, has to hack.
  * - Handle unknown format song (next song if possible ?).
+ * - (Digidrums frequency ok??).
  * - Cybern2 doesn't crash, but strange looping ending. Cybern3 (YM6) is good though.
+ * - Bionic Commando 1 doesn't work at all (0 second).
  * - Digidrums handled as Short !
  * - Data read handled as Short.
  * - Service is static in FirstActivity... Make AudioService a Singleton !?
@@ -77,6 +80,9 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	
 	//private IMusicController musicController = MusicController.getInstance();
 	
+	/** The tag used to give this Activity the name of the song to play. */
+	public static final String EXTRA_SONG_NAME = "SONG_NAME";
+
 	/** Stores the song duration in seconds. */
 	private int songDurationInSeconds;
 	
@@ -103,25 +109,28 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	/** The Pause button. It may be invisible. */
 	private Button pauseButton;
 	
+	private File mSong;
+	
 	// FIXME Remove the GLView because it's really CPU consuming!
 	//private EqualizerGLSurfaceView glSurfaceView;
-	
-	static private Context theContext;					// TODO HACK FOR DEBUG (no file !)
-	static public Context getContext() {
-		return theContext;
-	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playmusic);
 		
+		String songPath = getIntent().getStringExtra(EXTRA_SONG_NAME);
+		if (songPath != null) {
+			File musicFile = new File(songPath);
+			if (musicFile != null) {
+				mSong = musicFile;
+			}
+		}
+		
 		// FIXME Remove the GLView because it's really CPU consuming!
 		//glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
 
 		
-		
-		theContext = this;								// TODO HACK FOR DEBUG (no file !)
 		
 		// Registers the view to the music controller.
 		//musicController.addView(this);
@@ -161,6 +170,7 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 				Log.e("XXX", "PlayMusicActivity::onClick Start : début");
 				if (isBound) {
 					Log.e("XXX", "PlayMusicActivity::onClick Start : BOUND");
+					audioService.setSong(mSong);
 					audioService.play();
 					
 					// Tells the equalizer where to get its information.

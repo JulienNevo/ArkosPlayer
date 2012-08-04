@@ -11,4 +11,7 @@
     <string name="notificationTitle">Arkos Player</string>
     <string name="empty">(empty)</string>
     <string name="author">Author</string>
+    
+    <!-- Image descriptions. -->
+    <string name="selection_music_item_imageview_description">Selection item image</string>
 </resources>
