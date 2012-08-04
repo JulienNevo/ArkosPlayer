@@ -29,8 +29,8 @@
  */
 package aks.jnv.adapter;
 
-import aks.jnv.file.FileManager;
 import aks.jnv.song.SongFormat;
+import aks.jnv.util.FileUtils;
 
 /**
  * Very simple class holding information about an item of the music selection Activity.
@@ -59,7 +59,7 @@ public class MusicItem implements Comparable<MusicItem> {
 	public MusicItem(String path, SongFormat songFormat) {
 		mPath = path;
 		mSongFormat = songFormat;
-		mShortName = FileManager.getMusicShortName(mPath, true);
+		mShortName = FileUtils.getMusicShortName(mPath, true);
 		mShortNameLowerCase = mShortName.toLowerCase();
 	}
 	

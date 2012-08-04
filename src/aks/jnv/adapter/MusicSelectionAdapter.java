@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import aks.jnv.R;
-import aks.jnv.file.FileManager;
 import aks.jnv.song.SongFormat;
+import aks.jnv.util.FileUtils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -205,7 +205,7 @@ public class MusicSelectionAdapter extends BaseAdapter {
 		MusicItem musicItem = (MusicItem)getItem(position);
 		
 		// Keeps only a short name without the extension.
-		String musicShortName = FileManager.removeExtension(musicItem.getShortName());
+		String musicShortName = FileUtils.removeExtension(musicItem.getShortName());
 		TextView textView = viewHolder.textview;
 		LinearLayout layout = viewHolder.layout;
 		textView.setText(musicShortName);

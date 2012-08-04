@@ -32,9 +32,9 @@ package aks.jnv.audio;
 
 import java.io.File;
 import aks.jnv.R;
-import aks.jnv.file.FileManager;
 import aks.jnv.reader.ISongReader;
 import aks.jnv.song.SongUtil;
+import aks.jnv.util.FileUtils;
 import aks.jnv.view.PlayMusicActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -168,15 +168,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 		Log.e("XXX", "AudioService.onCreate");
 		notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
-		//songCount = FileManager.buildMusicFileList(this);
-		FileManager.buildMusicFileList(this);
+		//FileManager.buildMusicFileList(this);
 		
 		Toast.makeText(this, R.string.started, Toast.LENGTH_SHORT).show();
-		
-		//Notification notification = new Notification(R.drawable.statusbaricon, "youpla", System.currentTimeMillis());
-		
-		//startForeground(NOTIFICATION_ID, notification);
-		//showNotification(NotificationState.started);
 		
 		audioRenderer = new AudioRenderer();
 

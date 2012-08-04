@@ -33,10 +33,10 @@ package aks.jnv.view;
 import aks.jnv.R;
 import aks.jnv.adapter.MusicItem;
 import aks.jnv.adapter.MusicSelectionAdapter;
-import aks.jnv.file.FileManager;
 import aks.jnv.song.SongFormat;
 import aks.jnv.task.FindMusicTask;
 import aks.jnv.task.IFindMusicTaskCallback;
+import aks.jnv.util.FileUtils;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -91,7 +91,7 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		
 		// Starts the Task that finds music, unless all the music has been found before.
 		if ((!mMusicSearchFinished) && (mTask == null)) {
-			mTask = new FindMusicTask(FileManager.MUSIC_FOLDER, this);
+			mTask = new FindMusicTask(FileUtils.MUSIC_FOLDER, this);
 			Void params = null;
 			mTask.execute(params);
 		}

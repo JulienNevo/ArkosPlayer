@@ -36,19 +36,90 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import android.util.Log;
-
 import net.sourceforge.lhadecompressor.LhaEntry;
 import net.sourceforge.lhadecompressor.LhaFile;
 
+import android.util.Log;
+
 /**
- * Some utility methods.
+ * Takes care of accessing the SD card, looking for the music files, accessing them.
  * 
  * @author Julien Névo
  *
  */
-public class Util {
+public class FileUtils {
 
+	/** The debug tag of this class. */
+	private static final String DEBUG_TAG = "FileUtils";
+	
+ 	/** Folder we are the music. */
+	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
+
+	/** Dot character such as the ones found in file extensions. */
+	private static final char DOT_CHAR = '.'; 
+	
+//	/**
+//	 * Indicates if an external storage is available for reading (or read/write).
+//	 * @return true if an external storage is available for reading (or read/write).
+//	 */
+//	public static boolean isExternalStorageAvailableForReading() {
+//		String state = Environment.getExternalStorageState();
+//		return (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY));
+//	}
+//
+//	/**
+//	 * Returns the music folder, or Null if no device or no folder could be found.
+//	 * @param context the context.
+//	 * @return a File of the folder where the music are, or Null if no device or the folder could be found.
+//	 */
+//	public static File getMusicFolder(Context context) {
+//		return isExternalStorageAvailableForReading() ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC) : null;
+//	}
+
+	/**
+	 * Returns the music short name from its full path. Extension removed at will.
+	 * @param path The song full path.
+	 * @param keepExtension True to keep the extension.
+	 * @return The music short name.
+	 */
+	public static String getMusicShortName(String path, boolean keepExtension) {
+		int lastSlashIndex = path.lastIndexOf(File.separatorChar);
+		
+		// Finds the last slash, and skips it.
+		int firstIndex = (lastSlashIndex >= 0) ? (lastSlashIndex + 1) : 0;
+
+		int lastIndexExcluded;
+		if (keepExtension) {
+			// If the extension is kept, gets the remaining of the String. 
+			lastIndexExcluded = path.length();
+		} else {
+			// If the extension is removed, finds the last dot.
+			lastIndexExcluded = path.lastIndexOf(DOT_CHAR);
+			// Security in case the dot isn't found (also takes care of the (rather unlikely) possibility that the last dot is before the last slash).
+			if (lastIndexExcluded < firstIndex) {
+				lastIndexExcluded = path.length();
+			}
+		}
+		
+		return path.substring(firstIndex, lastIndexExcluded);
+	}
+
+	/**
+	 * Returns the string without the extension, if any.
+	 * @param filename The filename.
+	 * @return The string without the extension, if any.
+	 */
+	public static String removeExtension(String filename) {
+		int dotIndex = filename.lastIndexOf(DOT_CHAR);
+		if (dotIndex < 0) {
+			dotIndex = filename.length();
+		}
+		return filename.substring(0, dotIndex);
+	}
+	
+	
+	
+	
 	/** The size of the buffer for reading files. */
 	private static final int BUFFER_SIZE = 16384;
 	
@@ -154,7 +225,6 @@ public class Util {
 	public static byte[] unpackLHAFile(File musicFile) throws Exception {
 		InputStream is = null;
 		
-		// NEW CODE using LHA Decompressor-bin-0.9.jar.
 		LhaFile lhaFile = null;
 		byte[] data = null;
 		
@@ -166,44 +236,13 @@ public class Util {
 			data = readInputStream(is);
 			//int nbBytesRead = is.read(data, 0, length);
 		} catch (Exception e) {
-			Log.e("ArkosTracker", "Error while opening the possible LHA file.");
+			Log.e(DEBUG_TAG, "Error while opening the possible LHA file.");
 			data = null;
 		}
 		
-		// Old CODE using the old library.
-		
-//		LhaFile lhaFile = new LhaFile(musicFile);
-//		LhaHeader[] headers = lhaFile.getEntries();
-//		// Does it contain a LHA file ? If not, it may be because it's not a LHA file !
-//		if (headers.length > 0) {
-//			LhaHeader header = headers[0];
-//			is = lhaFile.getInputStream(header);
-//		} else {
-//			// Probably not a LHA file. We get the bytes anyway.
-//			is = new FileInputStream(musicFile);
-//		}
-		
-		
-		
-		//byte[] data = readInputStream(is);		
-		//is.mark(0);
-		
-		//byte[] header = new byte[length];
-		//int nbBytesRead = is.read(data, 0, length);
-		
-		// Test a (relevant ??) header.
-//		if ((data.length > 4) && ((data[3] == 'l') && (data[4] == 'h'))) {
-//			// The file "should" be a LHA file.
-//			is.reset();
-//			LhaInputStream lis = new LhaInputStream(is);
-//
-//			if (lis.getNextEntry() != null) {
-//				data = readInputStream(lis);
-//			}	
-//		}
-		
-		
 		return data;
 	}
+	
+	
 	
 }

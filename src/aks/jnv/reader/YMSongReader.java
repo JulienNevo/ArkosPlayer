@@ -38,7 +38,7 @@ import aks.jnv.audio.ISeekPositionObserver;
 import aks.jnv.song.Song;
 import aks.jnv.song.SongUtil;
 import aks.jnv.util.BinaryConstants;
-import aks.jnv.util.Util;
+import aks.jnv.util.FileUtils;
 import android.util.Log;
 
 /**
@@ -542,7 +542,7 @@ public class YMSongReader implements ISongReader {
 		byte[] dataByte = null;
 		
 		try {
-			dataByte = Util.unpackLHAFile(musicFile);
+			dataByte = FileUtils.unpackLHAFile(musicFile);
 		} catch (Exception e) {
 			Log.e(DEBUG_TAG, e.getMessage());
 		}
@@ -551,7 +551,7 @@ public class YMSongReader implements ISongReader {
 			return null;
 		}
 		
-		short[] data = Util.byteArrayToShortArray(dataByte);
+		short[] data = FileUtils.byteArrayToShortArray(dataByte);
 		// Checks for the YMx! tag and the Leonard tag.
 		boolean result = (data[0] == 'Y') && (data[1] == 'M') && (data[3] == '!')
 				&& (SongUtil.readNTString(data, LEONARD_STRING_OFFSET).equals(LEONARD_TAG)); 

@@ -36,7 +36,6 @@ import aks.jnv.R;
 import aks.jnv.accelerometer.AccelerometerManager;
 import aks.jnv.accelerometer.IAccelerometerListener;
 import aks.jnv.audio.SongInformation;
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -300,68 +299,6 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 		playButton.setVisibility(isPlayButtonShown ? View.VISIBLE : View.GONE);
 		pauseButton.setVisibility(isPlayButtonShown ? View.GONE : View.VISIBLE);
 	}
-
-//	@Override
-//	public void setMusicController(IMusicController musicController) {
-//		this.musicController = musicController;
-//	}
-//	
-//	@Override
-//	public void updateSongInformation(String author, String comments, String musicName,
-//			String format, String durationInSeconds) {
-//		final String auth = author;
-//		final String comm = comments;
-//		final String musName = musicName;
-//		final String frm = format;
-//		final String dur = durationInSeconds;
-//		
-//		handler.post(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				authorTextView.setText(auth);
-//				commentsTextView.setText(comm);
-//				musicNameTextView.setText(musName);
-//				formatTextView.setText(frm);
-//				durationInSecondsTextView.setText(dur);
-//			}
-//		});
-//	}
-//	
-//	@Override
-//	public void updateCurrentPosition(int position) {
-//		final int pos = position;
-//		handler.post(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				currentPositionInSecondsTextView.setText(Integer.toString(pos));
-//			}
-//		});
-//	}
-//
-//	@Override
-//	public void seek(int position) {
-//		// TODO Auto-generated method stub
-//	}
-//
-//	@Override
-//	public void notifyPause() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void notifyPlay() {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public void notifyStop() {
-//		// TODO Auto-generated method stub
-//		
-//	}
 
 	@Override
 	protected void updateSongInformationFomService() {

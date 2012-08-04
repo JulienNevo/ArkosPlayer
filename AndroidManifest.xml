@@ -24,10 +24,6 @@
         </activity>
         
         <activity
-            android:name=".view.MusicChoiceActivityOLD"
-            android:screenOrientation="portrait" />
-        
-        <activity
             android:name=".view.MusicSelectionActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
