@@ -70,10 +70,11 @@ public final class R {
          */
         public static final int play_music_by=0x7f06000b;
         public static final int play_music_format=0x7f06000c;
+        public static final int play_music_untitled_song=0x7f06000d;
         public static final int running=0x7f060004;
         /**  Image descriptions 
          */
-        public static final int selection_music_item_imageview_description=0x7f06000d;
+        public static final int selection_music_item_imageview_description=0x7f06000e;
         public static final int started=0x7f060003;
         public static final int stopped=0x7f060005;
         public static final int unknown=0x7f060006;

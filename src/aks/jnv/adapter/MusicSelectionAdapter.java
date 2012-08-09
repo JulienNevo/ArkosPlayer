@@ -36,7 +36,7 @@ import android.widget.TextView;
 public class MusicSelectionAdapter extends BaseAdapter {
 
 	/** The debug tag of this class. */
-	private static final String DEBUG_TAG = "MusicSelectionAdapter";
+	private static final String DEBUG_TAG = MusicSelectionAdapter.class.getSimpleName();
 	
 	/** The digit separator. */
 	private static final String DIGIT_SEPARATOR = "0-9";

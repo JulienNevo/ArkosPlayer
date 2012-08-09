@@ -34,7 +34,6 @@ import aks.jnv.reader.ISongReader;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.util.Log;
 
 /**
  * This class is a Thread that sends a buffer to the sound card whenever it requires it, thanks to the blocking
@@ -136,10 +135,10 @@ public class AudioRenderer extends Thread {
      */
 	public void startSound() {
 		if (threadMustStop || threadStarted || !audioBufferGenerator.isReady()) {
-			Log.e(DEBUG_TAG, "Thread won't start because not the right conditions.");
-			Log.e(DEBUG_TAG, "ThreadMustStop = " + threadMustStop);
-			Log.e(DEBUG_TAG, "threadStarted = " + threadStarted);
-			Log.e(DEBUG_TAG, "audioBufferGenerator.isReady() = " + audioBufferGenerator.isReady());
+//			Log.e(DEBUG_TAG, "Thread won't start because not the right conditions.");
+//			Log.e(DEBUG_TAG, "ThreadMustStop = " + threadMustStop);
+//			Log.e(DEBUG_TAG, "threadStarted = " + threadStarted);
+//			Log.e(DEBUG_TAG, "audioBufferGenerator.isReady() = " + audioBufferGenerator.isReady());
 			return;
 		}
 		
@@ -174,13 +173,13 @@ public class AudioRenderer extends Thread {
 	
 	@Override
 	public void run() {
-		Log.e(DEBUG_TAG, "Thread.run");
+		//Log.e(DEBUG_TAG, "Thread.run");
 		
 		threadStarted = true;
 		
 		if (!isInitialized) {
 			//initialize();
-			Log.e(DEBUG_TAG, "Thread not initialized.");
+			//Log.e(DEBUG_TAG, "Thread not initialized.");
 			return;
 		}
 		
@@ -205,7 +204,7 @@ public class AudioRenderer extends Thread {
 		audioTrack = null;
 		isInitialized = false;
 		
-		Log.e(DEBUG_TAG, "Thread is dead.");
+		//Log.e(DEBUG_TAG, "Thread is dead.");
 	}
 	
 	/**

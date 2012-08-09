@@ -50,13 +50,13 @@ import android.util.Log;
 public class YMSongReader implements ISongReader {
 
 	/** The debug tag of this class. */
-	private static final String DEBUG_TAG = "YMSongReader";
+	private static final String DEBUG_TAG = YMSongReader.class.getSimpleName();
 	
 	private static final int ATARI_ST_PSG_FREQUENCY = 2000000;
 	private static final int DEFAULT_PSG_FREQUENCY = ATARI_ST_PSG_FREQUENCY;		// Default value in case the PSG frequency isn't given.
 	private static final int DEFAULT_REPLAY_FREQUENCY = 50;		// Default value in case the replay frequency isn't given.
 	
-	private static final int LEONARD_STRING_OFFSET = 4;			// Offset of the "LeOnArD!" string.
+	//private static final int LEONARD_STRING_OFFSET = 4;			// Offset of the "LeOnArD!" string.
 	private static final int NB_VALID_VBL_OFFSET = 12;
 	private static final int SONG_ATTRIBUTES_OFFSET = 16;
 	private static final int NB_DIGIDRUMS_OFFSET = 20;
@@ -66,7 +66,7 @@ public class YMSongReader implements ISongReader {
 	private static final int FRAME_LOOP_START_OFFSET = 24;
 	private static final int FRAME_LOOP_START_OFFSET_YM5 = 28;	// Only from YM5 and up !
 	
-	private static final String LEONARD_TAG = "LeOnArD!";
+	//private static final String LEONARD_TAG = "LeOnArD!";
 	
 	private static final int DWORD_SIZE = 4;
 	private static final int WORD_SIZE = 2;
@@ -348,7 +348,7 @@ public class YMSongReader implements ISongReader {
 		}
 
 		// Next frame.
-		if (++currentFrame > nbFrames) {
+		if (++currentFrame >= nbFrames) {
 			currentFrame = frameLoopStart;
 		}
 		
@@ -552,9 +552,9 @@ public class YMSongReader implements ISongReader {
 		}
 		
 		short[] data = FileUtils.byteArrayToShortArray(dataByte);
-		// Checks for the YMx! tag and the Leonard tag.
-		boolean result = (data[0] == 'Y') && (data[1] == 'M') && (data[3] == '!')
-				&& (SongUtil.readNTString(data, LEONARD_STRING_OFFSET).equals(LEONARD_TAG)); 
+		
+		// Checks for the YMx! tag. The Leonard tag following is absent for YM2!/YM3!/YM3b.
+		boolean result = (data.length > 4) && (data[0] == 'Y') && (data[1] == 'M') && ((data[3] == '!') || (data[3] == 'b'));
 		
 		return result ? data : null;
 	}

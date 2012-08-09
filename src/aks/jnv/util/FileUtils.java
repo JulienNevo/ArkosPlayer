@@ -53,7 +53,8 @@ public class FileUtils {
 	private static final String DEBUG_TAG = "FileUtils";
 	
  	/** Folder we are the music. */
-	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
+	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
+	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Follin.Bros/";
 
 	/** Dot character such as the ones found in file extensions. */
 	private static final char DOT_CHAR = '.'; 

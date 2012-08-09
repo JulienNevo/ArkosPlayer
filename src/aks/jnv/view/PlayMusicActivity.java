@@ -171,10 +171,12 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 				
 				showPlayOrPauseButton(false);
 				
-				Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
-				intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
-				intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
-				startService(intent);
+				if (mSong != null) {
+					Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+					intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
+					intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
+					startService(intent);
+				}
 				
 //				if (isBound) {
 //					//Log.e(DEBUG_TAG, "PlayMusicActivity::onClick Start : BOUND");
@@ -358,15 +360,18 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	 */
 	private void updateSongInformation(String musicName, String author, String comments, String format, int duration) {
 		mSongDurationInSeconds = duration;
-		mSeekBar.setMax(duration - 1);
+		mSeekBar.setMax(duration > 0 ? duration - 1 : 0);
 		mSeekBar.setProgress(0);
 		mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(mSongDurationInSeconds));
 		
 		// Builds the main text.
 		StringBuffer sb = new StringBuffer();
-		if ((musicName != null) && (musicName.length() > 0)) {
-			sb.append("<b>").append(musicName).append("</b><br />");
+		
+		// Uses a place-holder as a title if none is present. 
+		if ((musicName == null) || (musicName.length() == 0)) {
+			musicName = getString(R.string.play_music_untitled_song);
 		}
+		sb.append("<b>").append(musicName).append("</b><br />");
 		if ((author != null) && (author.length() > 0)) {
 			sb.append(getString(R.string.play_music_by));
 			sb.append("<br />");

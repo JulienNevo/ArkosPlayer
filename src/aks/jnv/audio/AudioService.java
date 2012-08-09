@@ -203,7 +203,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	@Override
 	public void onCreate() {
-		Log.e(DEBUG_TAG, "onCreate");
+		//Log.e(DEBUG_TAG, "onCreate");
 		mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		//FileManager.buildMusicFileList(this);
@@ -223,39 +223,41 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 		
 		// What is the Action?
 		String action = intent.getAction();
-		if (action.equals(PLAY_SONG_RECEIVED_ACTION)) {
-			// Plays the song.
-			Log.e(DEBUG_TAG, "PLAY ACTION");
-			// TODO Don't restart the song if the song is the same.
-			String songPath = intent.getStringExtra(EXTRA_SONG_NAME);
-			
-			if (songPath != null) {
-				File musicFile = new File(songPath);
-				if (musicFile != null) {
-					mSong = musicFile;
-					playSong(mSong);
+		if (action != null) {
+			if (action.equals(PLAY_SONG_RECEIVED_ACTION)) {
+				// Plays the song.
+				//Log.e(DEBUG_TAG, "PLAY ACTION");
+				// TODO Don't restart the song if the song is the same.
+				String songPath = intent.getStringExtra(EXTRA_SONG_NAME);
+				
+				if (songPath != null) {
+					File musicFile = new File(songPath);
+					if (musicFile != null) {
+						mSong = musicFile;
+						playSong(mSong);
+					}
+				}
+				
+			} else if (action.equals(STOP_SONG_RECEIVED_ACTION)) {
+				//Log.e(DEBUG_TAG, "STOP ACTION");
+				// Stops the song.
+				stopSong();
+			} else if (action.equals(SEEK_POSITION_RECEIVED_ACTION)) {
+				int newSeekPosition = intent.getIntExtra(ACTION_EXTRA_NEW_SEEK_VALUE, -1);
+				//Log.e(DEBUG_TAG, "SEEK ACTION to " + newSeekPosition);
+				if (newSeekPosition >= 0) {
+					// Performs a seek.
+					seek(newSeekPosition);
 				}
 			}
-			
-		} else if (action.equals(STOP_SONG_RECEIVED_ACTION)) {
-			Log.e(DEBUG_TAG, "STOP ACTION");
-			// Stops the song.
-			stopSong();
-		} else if (action.equals(SEEK_POSITION_RECEIVED_ACTION)) {
-			int newSeekPosition = intent.getIntExtra(ACTION_EXTRA_NEW_SEEK_VALUE, -1);
-			Log.e(DEBUG_TAG, "SEEK ACTION to " + newSeekPosition);
-			if (newSeekPosition >= 0) {
-				// Performs a seek.
-				seek(newSeekPosition);
-			}
-		} 
+		}
 		
 		return super.onStartCommand(intent, flags, startId);
 	}
 	
 	@Override
 	public boolean onUnbind(Intent intent) {
-		Log.e(DEBUG_TAG, "onUnbind");
+		//Log.e(DEBUG_TAG, "onUnbind");
 		stopService();
 		return false;	// Does not authorize rebinding.
 	}
@@ -389,7 +391,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	
 	private void stopService() {
-		Log.e(DEBUG_TAG, "stopService");
+		//Log.e(DEBUG_TAG, "stopService");
 		mNotificationManager.cancel(NOTIFICATION_ID);
 		if (mAudioRenderer != null) {			// Crashes when leaving the Activity if not here. See why (null pointer exception), it is normal?.
 			mAudioRenderer.stopSound();

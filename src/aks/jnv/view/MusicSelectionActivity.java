@@ -55,7 +55,7 @@ import android.widget.ListView;
 public class MusicSelectionActivity extends Activity implements IFindMusicTaskCallback, OnItemClickListener {
 
 	/** The debug tag of this class. */
-	//private static final String DEBUG_TAG = "MusicSelectionActivity";
+	//private static final String DEBUG_TAG = MusicSelectionActivity.class.getSimpleName();
 
 	/** The Task that finds music. */
 	private FindMusicTask mTask;
@@ -144,7 +144,7 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		MusicItem musicItem = (MusicItem)mAdapter.getItem(position);
 		if (musicItem.getSongFormat() != SongFormat.unknown) {
 			// Sends the music to the PlayMusicActivity.
-			//Log.e("xxx", musicItem.getPath());
+			//Log.e(DEBUG_TAG, musicItem.getPath());
 			Intent intent = new Intent(this, PlayMusicActivity.class);
 			intent.putExtra(PlayMusicActivity.EXTRA_SONG_NAME, musicItem.getPath());
 			startActivity(intent);
