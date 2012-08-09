@@ -12,6 +12,10 @@
     <string name="empty">(empty)</string>
     <string name="author">Author</string>
     
-    <!-- Image descriptions. -->
+    <!-- Play Music Activity -->
+    <string name="play_music_by">"by:"</string>
+    <string name="play_music_format">"Format :"</string>
+    
+    <!-- Image descriptions -->
     <string name="selection_music_item_imageview_description">Selection item image</string>
 </resources>

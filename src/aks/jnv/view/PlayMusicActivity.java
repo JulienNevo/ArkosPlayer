@@ -35,10 +35,15 @@ import java.io.File;
 import aks.jnv.R;
 import aks.jnv.accelerometer.AccelerometerManager;
 import aks.jnv.accelerometer.IAccelerometerListener;
-import aks.jnv.audio.SongInformation;
+import aks.jnv.audio.AudioService;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -71,8 +76,15 @@ import android.widget.TextView;
  * @author Julien Névo
  * 
  */
-public class PlayMusicActivity extends ServiceActivity implements IAccelerometerListener {
+//public class PlayMusicActivity extends ServiceActivity implements IAccelerometerListener {
+public class PlayMusicActivity extends Activity implements IAccelerometerListener {
 
+	/** The debug tag of this class. */
+	private static final String DEBUG_TAG = PlayMusicActivity.class.getSimpleName();
+	
+	/** Helper class to broadcast only within the application. */
+	private static LocalBroadcastManager mLocalBroadcastManager;
+	
 	/** String written when the song information is not available. */
 	//private static final String UNKNOWN = "Unknown";
 	//private static final String UNKNOWN_DURATION = "0:00";
@@ -83,32 +95,31 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	public static final String EXTRA_SONG_NAME = "SONG_NAME";
 
 	/** Stores the song duration in seconds. */
-	private int songDurationInSeconds;
+	private int mSongDurationInSeconds;
 	
 	/** The TextView where the song information are displayed. */
-	private TextView mainTextView;
+	private TextView mMainTextView;
 	
-//	private TextView authorTextView;
-//	private TextView commentsTextView;
-//	private TextView musicNameTextView;
-//	private TextView formatTextView;
 	/** The TextView that shows the current position in the song in seconds. */
-	private TextView currentPositionInSecondsTextView;
+	private TextView mCurrentPositionInSecondsTextView;
 	/** The TextView that shows the remaining duration in seconds. */
-	private TextView remainingDurationInSecondsTextView;
+	private TextView mRemainingDurationInSecondsTextView;
 	/** The SeekBar in order to see the position in the music, and to allow the user to choose where to go. */
-	private SeekBar seekBar;
+	private SeekBar mSeekBar;
 	
 	/** The Play button. It may be invisible. */
-	private Button playButton;
+	private Button mPlayButton;
 	/** The Next Song button. */
-	private Button nextButton;
+	private Button mNextButton;
 	/** The Previous Song button. */
-	private Button previousButton;
+	private Button mPreviousButton;
 	/** The Pause button. It may be invisible. */
-	private Button pauseButton;
-	
+	private Button mPauseButton;
+	/** The possible song being played. */
 	private File mSong;
+
+	/** BroadcastReceiver to get Intents from the Audio Service. */
+	private BroadcastReceiver mAudioBroadcastReceiver;
 	
 	// FIXME Remove the GLView because it's really CPU consuming!
 	//private EqualizerGLSurfaceView glSurfaceView;
@@ -118,6 +129,7 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playmusic);
 		
+		// Gets the possible song to play from the calling Activity.
 		String songPath = getIntent().getStringExtra(EXTRA_SONG_NAME);
 		if (songPath != null) {
 			File musicFile = new File(songPath);
@@ -126,122 +138,101 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 			}
 		}
 		
+		
+		
+		
 		// FIXME Remove the GLView because it's really CPU consuming!
 		//glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
-
-		
-		
-		// Registers the view to the music controller.
-		//musicController.addView(this);
 		
 		// Retrieves the objects of the layout.
-		mainTextView = (TextView)findViewById(R.id.maintext);
-//		authorTextView = (TextView)findViewById(R.id.authortextplaymusicactivity);
-//		commentsTextView = (TextView)findViewById(R.id.commentstextplaymusicactivity);
-//		musicNameTextView = (TextView)findViewById(R.id.musicnametextplaymusicactivity);
-//		formatTextView = (TextView)findViewById(R.id.formattextplaymusicactivity);
-		remainingDurationInSecondsTextView = (TextView)findViewById(R.id.durationtextplaymusicactivity);
-		currentPositionInSecondsTextView = (TextView)findViewById(R.id.currentpositiontextplaymusicactivity);
+		mMainTextView = (TextView)findViewById(R.id.maintext);
+		mRemainingDurationInSecondsTextView = (TextView)findViewById(R.id.durationtextplaymusicactivity);
+		mCurrentPositionInSecondsTextView = (TextView)findViewById(R.id.currentpositiontextplaymusicactivity);
 		
-		playButton = (Button)findViewById(R.id.playbuttonplaymusicactivity);
-		pauseButton = (Button)findViewById(R.id.pausebuttonplaymusicactivity);
+		mPlayButton = (Button)findViewById(R.id.playbuttonplaymusicactivity);
+		mPauseButton = (Button)findViewById(R.id.pausebuttonplaymusicactivity);
 		
-		nextButton = (Button)findViewById(R.id.nextbuttonplaymusicactivity);
-		previousButton = (Button)findViewById(R.id.previousbuttonplaymusicactivity);
+		mNextButton = (Button)findViewById(R.id.nextbuttonplaymusicactivity);
+		mPreviousButton = (Button)findViewById(R.id.previousbuttonplaymusicactivity);
 		
-		seekBar = (SeekBar)findViewById(R.id.seekbarplaymusicactivity);
+		mSeekBar = (SeekBar)findViewById(R.id.seekbarplaymusicactivity);
 		
 		setFieldsToUnkown();
 		
-		updateSongInformationFomService();
+//		updateSongInformationFomService();
 		
-		showPlayOrPauseButton(true);
+		//showPlayOrPauseButton(true);
 		
 		// Sets up the interactions of the widgets of the layout.
-		playButton.setOnClickListener(new OnClickListener() {
+		mPlayButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
+				
 				showPlayOrPauseButton(false);
-//				if (musicController != null) {
-//					musicController.play();
+				
+				Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+				intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
+				intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
+				startService(intent);
+				
+//				if (isBound) {
+//					//Log.e(DEBUG_TAG, "PlayMusicActivity::onClick Start : BOUND");
+//					audioService.setSong(mSong);
+//					audioService.play();
+//					
+//					// Tells the equalizer where to get its information.
+//					// FIXME Remove the GLView because it's really CPU consuming!
+//					//glSurfaceView.setSongReader(audioService.getSongReader());
 //				}
-				Log.e("XXX", "PlayMusicActivity::onClick Start : début");
-				if (isBound) {
-					Log.e("XXX", "PlayMusicActivity::onClick Start : BOUND");
-					audioService.setSong(mSong);
-					audioService.play();
-					
-					// Tells the equalizer where to get its information.
-					// FIXME Remove the GLView because it's really CPU consuming!
-					//glSurfaceView.setSongReader(audioService.getSongReader());
-				}
 			}
 		});
 		
 		//stopButton.setOnClickListener(new OnClickListener() {
-		pauseButton.setOnClickListener(new OnClickListener() {
+		mPauseButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				showPlayOrPauseButton(true);
-//				if (musicController != null) {
-//					musicController.stop();
+				
+				Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+				intent.setAction(AudioService.STOP_SONG_RECEIVED_ACTION);
+				startService(intent);
+				
+//				if (isBound) {
+//					audioService.stop();
 //				}
-				if (isBound) {
-					audioService.stop();
-				}
 			}
 		});
 		
-		nextButton.setOnClickListener(new OnClickListener() {
+		mNextButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-//				if (musicController != null) {
-//					musicController.next();
-//				}
 			}
 		});
 		
-		previousButton.setOnClickListener(new OnClickListener() {
+		mPreviousButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-//				if (musicController != null) {
-//					musicController.previous();
-//				}
 			}
 		});
 		
-//		pauseButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-////				if (musicController != null) {
-////					musicController.pause();
-////				}
-//			}
-//		});
-		
-//		resumeButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-////				if (musicController != null) {
-////					musicController.play();
-////				}
-//			}
-//		});
-		
-		
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
+				// Asks the Service to seek a new position.
 				int seekPosition = seekBar.getProgress();
-				updatePositionTextViews(seekPosition, songDurationInSeconds);
-				audioService.seek(seekPosition);
+				
+				Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+				intent.setAction(AudioService.SEEK_POSITION_RECEIVED_ACTION);
+				intent.putExtra(AudioService.ACTION_EXTRA_NEW_SEEK_VALUE, seekPosition);
+				startService(intent);
+				
+				//updatePositionTextViews(seekPosition, songDurationInSeconds);
+				//audioService.seek(seekPosition);
 			}
 			
 			@Override
@@ -250,9 +241,16 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 			
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				
+				if (fromUser) {
+					// Updates the duration only.
+					int seekPosition = seekBar.getProgress();
+					updatePositionTextViews(seekPosition, mSongDurationInSeconds);
+				}
 			}
 		});
+		
+		// Plays the song.
+		mPlayButton.performClick();
 	}
 	
 	@Override
@@ -265,6 +263,51 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 		if (AccelerometerManager.isAccelerometerPresent()) {
 			AccelerometerManager.startListening(this);
 		}
+		
+		// Registers to the Broadcast Receiver from the AudioService.
+		if (mLocalBroadcastManager == null) {
+			mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+		}
+		// Tells the filter all the actions we'll react about.
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(AudioService.ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE);
+		filter.addAction(AudioService.ACTION_UPDATE_SONG_SEEK_FROM_SERVICE);
+		
+		// Creates the BroadcastReceiver. It will react to the intents from the Audio Service.
+		mAudioBroadcastReceiver = new BroadcastReceiver() {
+			
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String action = intent.getAction();
+				// We have received a message. What action?
+				if (action.equals(AudioService.ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE)) {
+					// Updates the song information, on the UI Thread.
+					final String musicName = intent.getStringExtra(AudioService.ACTION_EXTRA_SONG_NAME);
+					final String author = intent.getStringExtra(AudioService.ACTION_EXTRA_SONG_AUTHOR);
+					final String comments = intent.getStringExtra(AudioService.ACTION_EXTRA_SONG_COMMENTS);
+					final String format = intent.getStringExtra(AudioService.ACTION_EXTRA_SONG_FORMAT);
+					final int duration = intent.getIntExtra(AudioService.ACTION_EXTRA_SONG_DURATION, 0);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							updateSongInformation(musicName, author, comments, format, duration);
+						}
+					}); 
+				} else if (action.equals(AudioService.ACTION_UPDATE_SONG_SEEK_FROM_SERVICE)) {
+					// The service has notified of a new seek position. Updates it on the UI Thread.
+					final int newSeek = intent.getIntExtra(AudioService.ACTION_EXTRA_NEW_SEEK_VALUE, 0);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							updateSongSeekPosition(newSeek);
+						}
+					});
+				}
+			}
+		};
+		
+		
+		mLocalBroadcastManager.registerReceiver(mAudioBroadcastReceiver, filter);
 	}
 	
 	@Override
@@ -274,6 +317,11 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 		// Stops listening to the Accelerometer.
 		if (AccelerometerManager.isSensorActive()) {
 			AccelerometerManager.stopListening();
+		}
+		
+		// Unregisters to the Broadcast Receiver from the AudioService.
+		if ((mLocalBroadcastManager != null) && (mAudioBroadcastReceiver != null)) {
+			mLocalBroadcastManager.unregisterReceiver(mAudioBroadcastReceiver);
 		}
 	}
 	
@@ -296,56 +344,99 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	 * @param isPlayButtonShown true to show the Play button, false to show the Pause button.
 	 */
 	private void showPlayOrPauseButton(boolean isPlayButtonShown) {
-		playButton.setVisibility(isPlayButtonShown ? View.VISIBLE : View.GONE);
-		pauseButton.setVisibility(isPlayButtonShown ? View.GONE : View.VISIBLE);
-	}
-
-	@Override
-	protected void updateSongInformationFomService() {
-		// Asks the service to give it the song information, if it exists.
-		SongInformation songInformation = (audioService != null) ? audioService.getSongInformation() : null;
-		if (songInformation != null) {
-			String author = songInformation.getAuthor();
-			String comments = songInformation.getComments();
-			String format = songInformation.getFormat();
-//			musicNameTextView.setText(songInformation.getName());
-//			authorTextView.setText(author);
-//			commentsTextView.setText(comments);
-//			formatTextView.setText(format);
-			
-			songDurationInSeconds = songInformation.getSongDurationInSeconds();
-			seekBar.setMax(songDurationInSeconds - 1);
-			seekBar.setProgress(0);
-			remainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(songDurationInSeconds));
-			
-			// Builds the main text.
-			StringBuffer sb = new StringBuffer();
-			sb.append("<b>").append(songInformation.getName()).append("</b><br />");
-			if (author.length() > 0) {
-				sb.append("by:<br />");
-				sb.append("<b>").append(author).append("</b><br /><br />");
-			}
-			if (comments.length() > 0) {
-				sb.append("\"").append(comments).append("\"<br />");
-			}
-			sb.append("Format: ").append(format);
-			mainTextView.setText(Html.fromHtml(sb.toString()));
-		} else {
-			StringBuffer sb = new StringBuffer();
-			sb.append("No song loaded yet.");
-			mainTextView.setText(Html.fromHtml(sb.toString()));
-
-			setFieldsToUnkown();
-		}
+		mPlayButton.setVisibility(isPlayButtonShown ? View.VISIBLE : View.GONE);
+		mPauseButton.setVisibility(isPlayButtonShown ? View.GONE : View.VISIBLE);
 	}
 	
-	@Override
-	protected void updateSongSeekPositionFomService() {
-		// Asks the service to give the current seek position.
-		int seekPosition = audioService.getCurrentSeekPosition();
-		seekBar.setProgress(seekPosition);
-		updatePositionTextViews(seekPosition, songDurationInSeconds);
+	/**
+	 * Updates the song information.
+	 * @param musicName The name of the music.
+	 * @param author The author.
+	 * @param comments The comments.
+	 * @param format The format.
+	 * @param duration The duration in seconds.
+	 */
+	private void updateSongInformation(String musicName, String author, String comments, String format, int duration) {
+		mSongDurationInSeconds = duration;
+		mSeekBar.setMax(duration - 1);
+		mSeekBar.setProgress(0);
+		mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(mSongDurationInSeconds));
+		
+		// Builds the main text.
+		StringBuffer sb = new StringBuffer();
+		if ((musicName != null) && (musicName.length() > 0)) {
+			sb.append("<b>").append(musicName).append("</b><br />");
+		}
+		if ((author != null) && (author.length() > 0)) {
+			sb.append(getString(R.string.play_music_by));
+			sb.append("<br />");
+			sb.append("<b>").append(author).append("</b><br /><br />");
+		}
+		if ((comments != null) && (comments.length() > 0)) {
+			sb.append("\"").append(comments).append("\"<br />");
+		}
+		if ((format != null) && (format.length() > 0)) {
+			sb.append(getString(R.string.play_music_format)).append(format);
+		}
+		mMainTextView.setText(Html.fromHtml(sb.toString()));
 	}
+	
+	/**
+	 * Updates the seek position visually.
+	 * @param seekPosition The seek position, in seconds.
+	 */
+	private void updateSongSeekPosition(int seekPosition) {
+		mSeekBar.setProgress(seekPosition);
+		updatePositionTextViews(seekPosition, mSongDurationInSeconds);
+	}
+	
+
+//	@Override
+//	protected void updateSongInformationFomService() {
+//		// Asks the service to give it the song information, if it exists.
+//		SongInformation songInformation = (audioService != null) ? audioService.getSongInformation() : null;
+//		if (songInformation != null) {
+//			String author = songInformation.getAuthor();
+//			String comments = songInformation.getComments();
+//			String format = songInformation.getFormat();
+////			musicNameTextView.setText(songInformation.getName());
+////			authorTextView.setText(author);
+////			commentsTextView.setText(comments);
+////			formatTextView.setText(format);
+//			
+//			songDurationInSeconds = songInformation.getSongDurationInSeconds();
+//			seekBar.setMax(songDurationInSeconds - 1);
+//			seekBar.setProgress(0);
+//			remainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(songDurationInSeconds));
+//			
+//			// Builds the main text.
+//			StringBuffer sb = new StringBuffer();
+//			sb.append("<b>").append(songInformation.getName()).append("</b><br />");
+//			if (author.length() > 0) {
+//				sb.append("by:<br />");
+//				sb.append("<b>").append(author).append("</b><br /><br />");
+//			}
+//			if (comments.length() > 0) {
+//				sb.append("\"").append(comments).append("\"<br />");
+//			}
+//			sb.append("Format: ").append(format);
+//			mainTextView.setText(Html.fromHtml(sb.toString()));
+//		} else {
+//			StringBuffer sb = new StringBuffer();
+//			sb.append("No song loaded yet.");
+//			mainTextView.setText(Html.fromHtml(sb.toString()));
+//
+//			setFieldsToUnkown();
+//		}
+//	}
+	
+//	@Override
+//	protected void updateSongSeekPositionFomService() {
+//		// Asks the service to give the current seek position.
+//		int seekPosition = audioService.getCurrentSeekPosition();
+//		seekBar.setProgress(seekPosition);
+//		updatePositionTextViews(seekPosition, songDurationInSeconds);
+//	}
 	
 	
 
@@ -354,13 +445,9 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	 * bad file has been loaded.
 	 */
 	private void setFieldsToUnkown() {
-//		musicNameTextView.setText(UNKNOWN);
-//		authorTextView.setText(UNKNOWN);
-//		commentsTextView.setText(UNKNOWN);
-//		formatTextView.setText(UNKNOWN);
 		updatePositionTextViews(0, 0);
-		seekBar.setMax(0);
-		seekBar.setProgress(0);
+		mSeekBar.setMax(0);
+		mSeekBar.setProgress(0);
 	}
 	
 	/**
@@ -369,12 +456,12 @@ public class PlayMusicActivity extends ServiceActivity implements IAccelerometer
 	 * @param songDuration the song duration in seconds.
 	 */
 	private void updatePositionTextViews(int seekPosition, int songDuration) {
-		currentPositionInSecondsTextView.setText(convertDurationToMinutes(seekPosition));
+		mCurrentPositionInSecondsTextView.setText(convertDurationToMinutes(seekPosition));
 		int remainingDuration = songDuration - seekPosition;
 		if (remainingDuration < 0) {
 			remainingDuration = 0;
 		}
-		remainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(remainingDuration));
+		mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(remainingDuration));
 	}
 
 	/**

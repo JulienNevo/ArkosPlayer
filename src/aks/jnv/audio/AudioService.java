@@ -34,7 +34,6 @@ import java.io.File;
 import aks.jnv.R;
 import aks.jnv.reader.ISongReader;
 import aks.jnv.song.SongUtil;
-import aks.jnv.util.FileUtils;
 import aks.jnv.view.PlayMusicActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -43,24 +42,55 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 public class AudioService extends Service implements IAudioService, ISeekPositionObserver {
 
-	// Tags used to identify the Broadcast message from the Service to the Activities.
-	public static final String UPDATE_SONG_INFORMATION_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_INFORMATION_FROM_SERVICE";
-	//public static final String UPDATE_SONG_SEEK_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_SEEK_FROM_SERVICE";
+	/** The debug tag of this class. */
+	public static final String DEBUG_TAG = AudioService.class.getSimpleName();
+	
+	/** Action of playing the song, sent to the Service. */
+	public static final String PLAY_SONG_RECEIVED_ACTION = "PLAY_SONG";
+	/** Action of stopping the song, sent to the Service. */
+	public static final String STOP_SONG_RECEIVED_ACTION = "STOP_SONG";
+	/** Action of seeking a position, sent to the Service. */
+	public static final String SEEK_POSITION_RECEIVED_ACTION = "SEEK_POSITION";
+	
+	/** The tag used to give this Activity the name of the song to play. */
+	public static final String EXTRA_SONG_NAME = "SONG_NAME";
+	
+	/** Tag used to identify the Broadcast message from the Service to the Activities when the song information needs an update. */
+	public static final String ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_INFORMATION_FROM_SERVICE";
+	/** Tag used to identify the Broadcast message from the Service to the Activities when a new seek value is ready. */
+	public static final String ACTION_UPDATE_SONG_SEEK_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_SEEK_FROM_SERVICE";
 
-	public final static int TAG_UPDATE_SONG_INFORMATION = 0;
+	//public final static int TAG_UPDATE_SONG_INFORMATION = 0;
+	
 	public final static int TAG_UPDATE_SONG_SEEK = 1;
 	public final static String MESSAGE_NAME = "MessageFromSong";
+
+	/** Tag for the extra information from the service when it sends an update on the song name. */
+	public static final String ACTION_EXTRA_SONG_NAME = "UpdateSongInformationSongName";
+	/** Tag for the extra information from the service when it sends an update on the song author. */
+	public static final String ACTION_EXTRA_SONG_AUTHOR = "UpdateSongInformationAuthor";
+	/** Tag for the extra information from the service when it sends an update on the song comments. */
+	public static final String ACTION_EXTRA_SONG_COMMENTS = "UpdateSongInformationComments";
+	/** Tag for the extra information from the service when it sends an update on the song format. */
+	public static final String ACTION_EXTRA_SONG_FORMAT = "UpdateSongInformationFormat";
+	/** Tag for the extra information from the service when it sends an update on the song duration. */
+	public static final String ACTION_EXTRA_SONG_DURATION = "UpdateSongInformationDuration";
+
+	/** Tag for the extra information from the service when it sends a new seek value. */
+	public static final String ACTION_EXTRA_NEW_SEEK_VALUE = "UpdateSeekValue";
+
 	
 	/** The Audio Renderer used to render the song. */
-	private AudioRenderer audioRenderer;
+	private AudioRenderer mAudioRenderer;
 	
 	/** Used to notify the user of what is happening. */
-	private NotificationManager notificationManager;
+	private NotificationManager mNotificationManager;
 	
 	/** Unique identification String for the notification. */
 	private int NOTIFICATION_ID = R.string.local_service_name;
@@ -69,16 +99,24 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	private final IBinder binder = new LocalBinder();
 	
 	/** The information of the song (name, author, format...). May be Null. */
-	private SongInformation songInformation;
+	private SongInformation mSongInformation;
 	
 	/** The current seek position in seconds. */
-	private int currentSeekPosition;
+	private int mCurrentSeekPosition;
 	
 	/** SongReader given to the AudioRenderer. It is however stored only to get easily the value for the equalizer. */
-	private ISongReader songReader;
+	private ISongReader mSongReader;
 
 	/** The song to play or being played. */
 	private File mSong;
+
+	private IAudioBufferGenerator mAudioBufferGenerator;
+
+	/** Helper class to broadcast only within the application. */
+	private static LocalBroadcastManager mLocalBroadcastManager;
+	
+	/** The song to play or being played full path. This is only to know if the song has changed and thus must be restarted or not. */
+	//private String mSongFullPath;
 	
 	/** Number of the song currently played. -1 means that we never played one. */
 	//private int songNumber = -1;
@@ -140,7 +178,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	 * @return the SongReader used, or null.
 	 */
 	public ISongReader getSongReader() {
-		return songReader;
+		return mSongReader;
 	}
 
 	
@@ -165,25 +203,59 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	@Override
 	public void onCreate() {
-		Log.e("XXX", "AudioService.onCreate");
-		notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		Log.e(DEBUG_TAG, "onCreate");
+		mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		//FileManager.buildMusicFileList(this);
 		
 		Toast.makeText(this, R.string.started, Toast.LENGTH_SHORT).show();
 		
-		audioRenderer = new AudioRenderer();
-
-		// Creates the AY generator and gives it to the renderer, which is not called anymore.
-		IAudioBufferGenerator audioBufferGenerator = new AYBufferGenerator();
-		audioBufferGenerator.setSampleRate(audioRenderer.getSampleRate());
 		
-		audioRenderer.setAudioBufferGenerator(audioBufferGenerator);
+
+		mAudioBufferGenerator = new AYBufferGenerator();
+		
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// Performed whenever startService is called. We use this to give order to the Service, as this method is called every time (contrary to onCreate which
+		// is called only when the Service is actually started).
+		
+		// What is the Action?
+		String action = intent.getAction();
+		if (action.equals(PLAY_SONG_RECEIVED_ACTION)) {
+			// Plays the song.
+			Log.e(DEBUG_TAG, "PLAY ACTION");
+			// TODO Don't restart the song if the song is the same.
+			String songPath = intent.getStringExtra(EXTRA_SONG_NAME);
+			
+			if (songPath != null) {
+				File musicFile = new File(songPath);
+				if (musicFile != null) {
+					mSong = musicFile;
+					playSong(mSong);
+				}
+			}
+			
+		} else if (action.equals(STOP_SONG_RECEIVED_ACTION)) {
+			Log.e(DEBUG_TAG, "STOP ACTION");
+			// Stops the song.
+			stopSong();
+		} else if (action.equals(SEEK_POSITION_RECEIVED_ACTION)) {
+			int newSeekPosition = intent.getIntExtra(ACTION_EXTRA_NEW_SEEK_VALUE, -1);
+			Log.e(DEBUG_TAG, "SEEK ACTION to " + newSeekPosition);
+			if (newSeekPosition >= 0) {
+				// Performs a seek.
+				seek(newSeekPosition);
+			}
+		} 
+		
+		return super.onStartCommand(intent, flags, startId);
 	}
 	
 	@Override
 	public boolean onUnbind(Intent intent) {
-		Log.e("XXX", "AudioService.onUnbind");
+		Log.e(DEBUG_TAG, "onUnbind");
 		stopService();
 		return false;	// Does not authorize rebinding.
 	}
@@ -196,57 +268,116 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 
 	public void playSong(File file) {
-		songReader = null;
+		// If nothing is to be played, and nothing was previously played, then nothing can be done.
+		String currentSongFullPath = mSong == null ? null : mSong.getAbsolutePath();
 		
-		songReader = SongUtil.getSongReaderFromFile(file);
-		
-		if (songReader == null) {
-			Log.e("XXX", "Song format unknown ! " + file.getName());
-			// FIXME handle unknown format song.
-			songInformation = null;
-		} else {
-			Notification notification = new Notification(R.drawable.ic_launcher, "Playing song.", System.currentTimeMillis());
-			
-			//Intent notificationIntent = new Intent(this, AudioService.class);
-			Intent notificationIntent = new Intent(this, PlayMusicActivity.class);
-			
-			// Used when the user clicks on the notification.
-			//PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			
-			notification.setLatestEventInfo(getApplicationContext(), getText(R.string.notificationTitle), "zopzop", contentIntent);
-			
-			//notificationManager.notify(NOTIFICATION_ID, notification);
-			startForeground(NOTIFICATION_ID, notification);
-			
-			audioRenderer.setSongReader(songReader);
-			// Registers as a seek position observer.
-			songReader.addSeekObserver(this);
-			
-			audioRenderer.startSound();
-			
-			songInformation = new SongInformation(songReader.getName(),
-					songReader.getAuthor(), songReader.getComments(), songReader.getFormat(),
-					songReader.getDuration());
-						
-			
-			Intent intent = new Intent(UPDATE_SONG_INFORMATION_FROM_SERVICE);
-			intent.putExtra(MESSAGE_NAME, TAG_UPDATE_SONG_INFORMATION);
-			sendBroadcast(intent);
+		if ((file == null) && (currentSongFullPath == null)) {
+			return;
 		}
+		
+		boolean mustStartNewSong = false;
+		
+		String newSongFullPath = null;
+		if (file == null) {
+			mustStartNewSong = true;
+		} else {
+			// A new File is present. Is it a new song?
+			if (currentSongFullPath == null) {
+				// There wasn't any old song.
+				mustStartNewSong = true;
+			} else {
+				mustStartNewSong = file.getAbsolutePath() !=  currentSongFullPath;
+			}
+		}
+		
+		// FIXME Song still starts from the start. mSongReader must not be recreated? See how position inside the song is managed.
+		
+		if (mustStartNewSong) {
+		
+			mSong = file;
+	
+			mSongReader = SongUtil.getSongReaderFromFile(file);
+			
+			if (mSongReader == null) {
+				Log.e(DEBUG_TAG, "Song format unknown ! " + file.getName());
+				// FIXME handle unknown format song.
+				mSongInformation = null;
+			} else {
+				Notification notification = new Notification(R.drawable.ic_launcher, "Playing song.", System.currentTimeMillis());
+				
+				//Intent notificationIntent = new Intent(this, AudioService.class);
+				Intent notificationIntent = new Intent(this, PlayMusicActivity.class);
+				
+				// Used when the user clicks on the notification.
+				//PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+				PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+				
+				notification.setLatestEventInfo(getApplicationContext(), getText(R.string.notificationTitle), "zopzop", contentIntent);
+				
+				//notificationManager.notify(NOTIFICATION_ID, notification);
+				startForeground(NOTIFICATION_ID, notification);
+				
+				// Creates a new Audio Renderer if needed.
+				if (mAudioRenderer == null) {
+					mAudioRenderer = new AudioRenderer();
+					mAudioBufferGenerator.setSampleRate(mAudioRenderer.getSampleRate());
+					mAudioRenderer.setAudioBufferGenerator(mAudioBufferGenerator);
+				}
+				
+				mAudioRenderer.setSongReader(mSongReader);
+				// Registers as a seek position observer.
+				mSongReader.addSeekObserver(this);
+				
+				//audioRenderer.startSound();
+				
+				mSongInformation = new SongInformation(mSongReader.getName(),
+						mSongReader.getAuthor(), mSongReader.getComments(), mSongReader.getFormat(),
+						mSongReader.getDuration());
+							
+				
+				Intent intent = new Intent(ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE);
+				intent.putExtra(ACTION_EXTRA_SONG_NAME, mSongReader.getName());
+				intent.putExtra(ACTION_EXTRA_SONG_AUTHOR, mSongReader.getAuthor());
+				intent.putExtra(ACTION_EXTRA_SONG_COMMENTS, mSongReader.getComments());
+				intent.putExtra(ACTION_EXTRA_SONG_FORMAT, mSongReader.getFormat());
+				intent.putExtra(ACTION_EXTRA_SONG_DURATION, mSongReader.getDuration());
+				sendLocalBroadcast(intent);
+			}
+		}
+		
+		// In all case, starts the Audio Renderer.
+		mAudioRenderer.startSound();
 		
 	}
 
+
+
+	/**
+	 * Stops the song.
+	 */
 	public void stopSong() {
-		audioRenderer.stopSound();
-		
-		stopForeground(false);
+		mAudioRenderer.stopSound();
+		mAudioRenderer = null;
+		// Allows the Service to be killed if memory is needed.
+		stopForeground(true);
 	}
+
 	
 	// ***************************************
 	// Private methods
 	// ***************************************
 
+	/**
+	 * Sends a Broadcast through the LocalBroadcastManager, instantiating it if necessary.
+	 * @param intent The Intent to broadcast.
+	 */
+	private void sendLocalBroadcast(Intent intent) {
+		if (mLocalBroadcastManager == null) {
+			mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+		}
+		mLocalBroadcastManager.sendBroadcast(intent);
+	}
+	
 	/**
 	 * Returns the next song to be played.
 	 * @return the File to play, or Null if none could be found.
@@ -258,11 +389,11 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	
 	private void stopService() {
-		Log.e("XXX", "AudioService.stopService");
-		notificationManager.cancel(NOTIFICATION_ID);
-		if (audioRenderer != null) {			// Crashes when leaving the Activity if not here. See why (null pointer exception), it is normal?.
-			audioRenderer.stopSound();
-			audioRenderer = null;
+		Log.e(DEBUG_TAG, "stopService");
+		mNotificationManager.cancel(NOTIFICATION_ID);
+		if (mAudioRenderer != null) {			// Crashes when leaving the Activity if not here. See why (null pointer exception), it is normal?.
+			mAudioRenderer.stopSound();
+			mAudioRenderer = null;
 		}
 		
 		Toast.makeText(this, R.string.destroyedService, Toast.LENGTH_SHORT).show();
@@ -309,8 +440,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	
 	
-	
-	
+	// ------------------------------------
+	// IAudioService implementation methods
+	// ------------------------------------
 	
 	@Override
 	public void stop() {
@@ -320,8 +452,6 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -331,8 +461,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public void seek(int secondToSeek) {
-		audioRenderer.seek(secondToSeek);
-		
+		mAudioRenderer.seek(secondToSeek);
 	}
 
 	@Override
@@ -344,41 +473,47 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public SongInformation getSongInformation() {
-		return songInformation;
+		return mSongInformation;
 	}
 	
 	@Override
 	public int getCurrentSeekPosition() {
-		return currentSeekPosition;
-	}
-
-
-	@Override
-	public void notifyNewSeekPositionFromSubject(int seekPosition) {
-		if (currentSeekPosition != seekPosition) {
-			currentSeekPosition = seekPosition;
-			Intent intent = new Intent(UPDATE_SONG_INFORMATION_FROM_SERVICE);
-			intent.putExtra(MESSAGE_NAME, TAG_UPDATE_SONG_SEEK);
-			sendBroadcast(intent);
-		}
+		return mCurrentSeekPosition;
 	}
 
 	@Override
 	public int getVolumeChannel(int channel) {
-		return (songReader != null) ? songReader.getVolumeChannel(channel) : 0;
+		return (mSongReader != null) ? mSongReader.getVolumeChannel(channel) : 0;
 	}
-
 
 	@Override
 	public int getNoiseValue() {
-		return (songReader != null) ? songReader.getNoiseValue() : 0;
+		return (mSongReader != null) ? mSongReader.getNoiseValue() : 0;
 	}
 
 
 	@Override
 	public int getNoiseChannels() {
-		return (songReader != null) ? songReader.getNoiseChannels() : 0;
+		return (mSongReader != null) ? mSongReader.getNoiseChannels() : 0;
 	}
+	
+	
+	// ------------------------------------
+	// ISeekPosition implementation methods
+	// ------------------------------------
+
+
+	@Override
+	public void notifyNewSeekPositionFromSubject(int seekPosition) {
+		// Sends the new seek position, if different from the one previously sent.
+		if (mCurrentSeekPosition != seekPosition) {
+			mCurrentSeekPosition = seekPosition;
+			Intent intent = new Intent(ACTION_UPDATE_SONG_SEEK_FROM_SERVICE);
+			intent.putExtra(ACTION_EXTRA_NEW_SEEK_VALUE, seekPosition);
+			sendLocalBroadcast(intent);
+		}
+	}
+
 
 
 

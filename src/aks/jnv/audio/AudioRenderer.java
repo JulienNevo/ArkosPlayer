@@ -34,6 +34,7 @@ import aks.jnv.reader.ISongReader;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.Log;
 
 /**
  * This class is a Thread that sends a buffer to the sound card whenever it requires it, thanks to the blocking
@@ -47,6 +48,9 @@ import android.media.AudioTrack;
  */
 public class AudioRenderer extends Thread {
 
+	/** The debug tag of this class. */
+	public static final String DEBUG_TAG = AudioRenderer.class.getSimpleName();
+	
 	/** The Audio Buffer Generator that will fill the buffer before we send it to the sound card. */
 	private IAudioBufferGenerator audioBufferGenerator;
 	
@@ -131,7 +135,11 @@ public class AudioRenderer extends Thread {
      * Starts playing the sound.
      */
 	public void startSound() {
-		if (threadStarted || !audioBufferGenerator.isReady()) {
+		if (threadMustStop || threadStarted || !audioBufferGenerator.isReady()) {
+			Log.e(DEBUG_TAG, "Thread won't start because not the right conditions.");
+			Log.e(DEBUG_TAG, "ThreadMustStop = " + threadMustStop);
+			Log.e(DEBUG_TAG, "threadStarted = " + threadStarted);
+			Log.e(DEBUG_TAG, "audioBufferGenerator.isReady() = " + audioBufferGenerator.isReady());
 			return;
 		}
 		
@@ -152,7 +160,7 @@ public class AudioRenderer extends Thread {
     public void stopSound() {
     	if (isInitialized) {
     		threadMustStop = true;
-    		isInitialized = false;
+    		//isInitialized = false;
     		
     		try {
 				join();
@@ -166,10 +174,14 @@ public class AudioRenderer extends Thread {
 	
 	@Override
 	public void run() {
+		Log.e(DEBUG_TAG, "Thread.run");
+		
 		threadStarted = true;
 		
 		if (!isInitialized) {
-			initialize();
+			//initialize();
+			Log.e(DEBUG_TAG, "Thread not initialized.");
+			return;
 		}
 		
 		// "Infinite loop", generating and playing the sounds as long as needed.
@@ -185,12 +197,15 @@ public class AudioRenderer extends Thread {
 		}
 		
 		threadStarted = false;
+		threadMustStop = false;
 		
 		audioTrack.flush();
 		audioTrack.stop();
 		audioTrack.release();
 		audioTrack = null;
 		isInitialized = false;
+		
+		Log.e(DEBUG_TAG, "Thread is dead.");
 	}
 	
 	/**

@@ -16,8 +16,9 @@
     
     	<service
     		android:enabled="true"
-    		android:name=".audio.AudioService"
-    	/>
+    		android:name=".audio.AudioService" >
+    	</service>
+    	
         <activity
             android:name=".view.FirstActivity"
             android:label="@string/app_name" >
