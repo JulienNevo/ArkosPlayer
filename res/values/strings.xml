@@ -11,6 +11,10 @@
     <string name="notificationTitle">Arkos Player</string>
     <string name="empty">(empty)</string>
     <string name="author">Author</string>
+    
+    <!-- Music Selection Activity -->
+    <string name="music_selection_item_arrow">">"</string>
+    
     <!-- Play Music Activity -->
     <string name="play_music_by">"by:"</string>
     <string name="play_music_format">"Format :"</string>

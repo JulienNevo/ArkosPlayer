@@ -2,30 +2,26 @@ package aks.jnv.task;
 
 import java.io.File;
 
-import aks.jnv.adapter.MusicSelectionItem;
 import aks.jnv.adapter.MusicSelectionMusicItem;
 import aks.jnv.song.SongFormat;
 import aks.jnv.song.SongUtil;
 import android.os.AsyncTask;
 
 /**
- * Task that finds music from the given folder only, and notifies for every sub-folder or music found.
- * Music are considered "found" only if its format has been validated.
- * 
- * The validation of a music is only based on its extension.
+ * Task that finds music from the given folder and inside the sub-folders, and notifies for every music found, once its format has been validated.
  * 
  * @author Julien Névo
  *
  */
-public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
+public class FindMusicRecursiveTask extends AsyncTask<Void, MusicSelectionMusicItem, Void> {
 
 	/**
-	 * Interface for object wanting to be notified when a music or a folder has been found by the FindMusicTask.
+	 * Interface for object wanting to be notified when a music has been found by the FindMusicTask, and also about its start and end.
 	 * 
 	 * @author Julien Névo
 	 *
 	 */
-	public interface IFindMusicTaskCallback {
+	public interface IFindMusicRecursiveTaskCallback {
 
 		/**
 		 * Notifies that the music search has started.
@@ -33,10 +29,10 @@ public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
 		public void onMusicSearchStarted();
 		
 		/**
-		 * Notifies that an item has been found.
-		 * @param item information about the item found.
+		 * Notifies that a music has been found.
+		 * @param musicItem Information about the music found.
 		 */
-		public void onItemFound(MusicSelectionItem item);
+		public void onMusicFound(MusicSelectionMusicItem musicItem);
 
 		/**
 		 * Notifies that the music search has finished.
@@ -54,9 +50,9 @@ public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
 	//private Context mContext;
 	
 	/** Possible callback about result of the music search. */
-	private IFindMusicTaskCallback mCallback;
+	private IFindMusicRecursiveTaskCallback mCallback;
 
-	public FindMusicTask(/*Context context, */ String basePath, IFindMusicTaskCallback callback) {
+	public FindMusicRecursiveTask(/*Context context, */ String basePath, IFindMusicRecursiveTaskCallback callback) {
 		//mContext = context;
 		mBasePath = basePath;
 		mCallback = callback;
@@ -73,16 +69,19 @@ public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
 	}
 	
 	@Override
-	protected void onProgressUpdate(MusicSelectionItem... values) {
+	protected void onProgressUpdate(MusicSelectionMusicItem... values) {
 		super.onProgressUpdate(values);
 		
-		mCallback.onItemFound(values[0]);
+		// Notifies the possible callback that a music has been found.
+		if (mCallback != null) {
+			mCallback.onMusicFound(values[0]);
+		}
 	}
 	
 	@Override
 	protected Void doInBackground(Void... arg0) {
 		
-		// Finds all the music and folder from the base path, and notifies the callback.
+		// Finds all the music from the base path, recursively, and notifies the callback.
 		File path = new File(mBasePath);
 		findMusic(path);
 		
@@ -100,30 +99,26 @@ public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
 	}
 
 	/**
-	 * Method that finds all the music and folders of the given path, notifies the callback if one is valid.
+	 * Recursive method that finds all the music of the given path, notifies the callback if one is valid, and searches the possible sub-folders.
 	 * @param path The current path.
 	 */
 	private void findMusic(File path) {
-		// If no callback is present, nothing has to be done.
-		if (mCallback == null) {
-			return;
-		}
-		
+
 		// Gets all the files of the folder.
 		File[] files = path.listFiles();
 		
-		// Scans all of them. They may be directories.
+		// Scans all of them. They may be directories, in which case we explore them recursively.
 		if (files != null) {
 			for (File file : files) {
 				if (file.isDirectory()) {
-					// It's a directory. Notifies it, but don't explore it.
-					publishProgress(new MusicSelectionItem(file.getAbsolutePath(), true));
+					// It's a directory. Explores it recursively.
+					findMusic(file);
 				} else {
 					// Found a file. Is it a music?
 					SongFormat songFormat = SongUtil.getFileFormat(file);
 					if (songFormat != SongFormat.unknown) {
-						// Notifies the callback that a music has been found.
-						publishProgress(new MusicSelectionMusicItem(file.getAbsolutePath(), songFormat));
+						// If yes, notifies the possible callback about it.
+						publishProgress(new MusicSelectionMusicItem[] { new MusicSelectionMusicItem(file.getAbsolutePath(), songFormat) });
 					}
 				}
 			}

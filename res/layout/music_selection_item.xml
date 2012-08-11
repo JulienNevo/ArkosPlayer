@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<!-- Layout for an item in the ListView of the Music Selection Activity. -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/music_selection_item_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-     >
-    
-   <!-- <ImageView
-        android:id="@+id/music_selection_item_imageview"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:contentDescription="@string/selection_music_item_imageview_description"
-        android:src="@drawable/ic_launcher" />
-        -->
+    android:layout_height="wrap_content" >
+
     <TextView
-        android:id="@+id/music_selection_item_textview"
+        android:id="@+id/music_selection_item_title_textview"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_centerVertical="true"
         android:drawableLeft="@drawable/ic_launcher"
         android:drawablePadding="15dp"
         android:gravity="center_vertical"
+        style="@android:style/TextAppearance.Medium" />
+    <TextView
+        android:id="@+id/music_selection_item_arrow_textview"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
         style="@android:style/TextAppearance.Medium"
-        />
+        android:text="@string/music_selection_item_arrow" />
 
-</LinearLayout>
+</RelativeLayout>

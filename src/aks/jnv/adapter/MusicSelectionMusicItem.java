@@ -35,41 +35,22 @@ import aks.jnv.util.FileUtils;
 /**
  * Very simple class holding information about an item of the music selection Activity.
  * 
- * The comparison is based on the short name of the music, in lower case. This short name in lower case is cached in order to speed the process.
- * 
  * @author Julien Névo
  *
  */
-public class MusicItem implements Comparable<MusicItem> {
+public class MusicSelectionMusicItem extends MusicSelectionItem {
 	
-	/** The path of the music file. */
-	private String mPath;
 	/** The song format. */
 	private SongFormat mSongFormat;
-	/** The music short name, with the extension. It is stored for convenience. As a substring from the path, it shouldn't cost much. */
-	private String mShortName;
-	/** The music short name, with the extension and in lower case. It is stored because the sorting is based on it. It's faster to cache it. */
-	private String mShortNameLowerCase;
 	
 	/**
 	 * Constructor.
 	 * @param path The path of the music file.
 	 * @param songFormat The song format.
 	 */
-	public MusicItem(String path, SongFormat songFormat) {
-		mPath = path;
+	public MusicSelectionMusicItem(String path, SongFormat songFormat) {
+		super(path, false);
 		mSongFormat = songFormat;
-		mShortName = FileUtils.getMusicShortName(mPath, true);
-		mShortNameLowerCase = mShortName.toLowerCase();
-	}
-	
-	
-	/**
-	 * Returns the music path.
-	 * @return The music path.
-	 */
-	public String getPath() {
-		return mPath;
 	}
 
 	/**
@@ -80,22 +61,5 @@ public class MusicItem implements Comparable<MusicItem> {
 		return mSongFormat;
 	}
 
-	/**
-	 * Returns the short name of the music, with the extension.
-	 * @return The short name of the music, with the extension.
-	 */
-	public String getShortName() {
-		return mShortName;
-	}
-
-
-	@Override
-	public int compareTo(MusicItem another) {
-		if (another == this) {
-			return 0;
-		}
-
-		// The comparison is based on the short name in lower case.
-		return mShortNameLowerCase.compareTo(another.mShortNameLowerCase);
-	}
+	
 }

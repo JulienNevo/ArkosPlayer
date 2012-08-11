@@ -30,12 +30,17 @@
 
 package aks.jnv.view;
 
+import java.io.File;
+
 import aks.jnv.R;
-import aks.jnv.adapter.MusicItem;
+import aks.jnv.adapter.MusicSelectionItem;
+import aks.jnv.adapter.MusicSelectionMusicItem;
 import aks.jnv.adapter.MusicSelectionAdapter;
 import aks.jnv.song.SongFormat;
+import aks.jnv.task.FindMusicRecursiveTask;
+import aks.jnv.task.FindMusicRecursiveTask.IFindMusicRecursiveTaskCallback;
 import aks.jnv.task.FindMusicTask;
-import aks.jnv.task.IFindMusicTaskCallback;
+import aks.jnv.task.FindMusicTask.IFindMusicTaskCallback;
 import aks.jnv.util.FileUtils;
 import android.app.Activity;
 import android.content.Intent;
@@ -57,6 +62,9 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	/** The debug tag of this class. */
 	//private static final String DEBUG_TAG = MusicSelectionActivity.class.getSimpleName();
 
+	/** The tag used to give this Activity the name of the folder from where to start the search. */
+	private static final String EXTRA_MUSIC_PATH = "MUSIC_PATH";
+
 	/** The Task that finds music. */
 	private FindMusicTask mTask;
 	
@@ -67,6 +75,9 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	
 	/** Indicates if all the music were found, so that we don't search again if coming back to this Activity. */
 	private boolean mMusicSearchFinished;
+	
+	/** The folder from where to start the search. */
+	private String mCurrentFolder;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +88,11 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		setProgressBarIndeterminate(true);
 		
 		setContentView(R.layout.music_selection);
+		
+		// Gets the possible given music path to this Activity.
+		// Uses a default folder if none is given.
+		String musicPath = getIntent().getStringExtra(EXTRA_MUSIC_PATH);
+		mCurrentFolder = (musicPath == null) ? FileUtils.MUSIC_FOLDER : musicPath;
 		
 		// Sets up the ListView and the Adapter.
 		mListView = (ListView)findViewById(R.id.music_selection_listView);
@@ -91,7 +107,7 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		
 		// Starts the Task that finds music, unless all the music has been found before.
 		if ((!mMusicSearchFinished) && (mTask == null)) {
-			mTask = new FindMusicTask(FileUtils.MUSIC_FOLDER, this);
+			mTask = new FindMusicTask(mCurrentFolder, this);
 			Void params = null;
 			mTask.execute(params);
 		}
@@ -116,22 +132,26 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	
 	@Override
 	public void onMusicSearchStarted() {
-		mAdapter.setNewDataCanCome(true);
+		//mAdapter.setNewDataCanCome(true);
 		setProgressBarIndeterminateVisibility(true);
 	}
 	
+
 	@Override
-	public void onMusicFound(MusicItem musicItem) {
-		mAdapter.add(musicItem);
+	public void onItemFound(MusicSelectionItem item) {
+		mAdapter.add(item);
 	}
 
 	@Override
 	public void onMusicSearchFinished() {
-		mAdapter.setNewDataCanCome(false);
+		//mAdapter.setNewDataCanCome(false);
+		mAdapter.setLastDataArrived();
 		setProgressBarIndeterminateVisibility(false);
 		
 		// No need to search anymore when coming back to this Activity.
 		mMusicSearchFinished = true;
+		
+		mAdapter.notifyDataSetChanged();
 	}
 
 	// -----------------------------------------
@@ -140,14 +160,24 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		// An item has been clicked. Gets the music related to it, if the format is known.
-		MusicItem musicItem = (MusicItem)mAdapter.getItem(position);
-		if (musicItem.getSongFormat() != SongFormat.unknown) {
-			// Sends the music to the PlayMusicActivity.
-			//Log.e(DEBUG_TAG, musicItem.getPath());
-			Intent intent = new Intent(this, PlayMusicActivity.class);
-			intent.putExtra(PlayMusicActivity.EXTRA_SONG_NAME, musicItem.getPath());
+		// An item has been clicked. Gets the music related to it, if the format is known,
+		// or explores the folder if it was one.
+		MusicSelectionItem item = (MusicSelectionItem)mAdapter.getItem(position);
+		if (item.isFolder()) {
+			// Launches the same Activity with the path of the selected folder.
+			Intent intent = new Intent(this, MusicSelectionActivity.class);
+			intent.putExtra(EXTRA_MUSIC_PATH, item.getPath());
 			startActivity(intent);
+		} else {
+			MusicSelectionMusicItem musicItem = (MusicSelectionMusicItem)item;
+			if (musicItem.getSongFormat() != SongFormat.unknown) {
+				// Sends the music to the PlayMusicActivity.
+				//Log.e(DEBUG_TAG, musicItem.getPath());
+				Intent intent = new Intent(this, PlayMusicActivity.class);
+				intent.putExtra(PlayMusicActivity.EXTRA_SONG_NAME, musicItem.getPath());
+				startActivity(intent);
+			}
 		}
 	}
+
 }
