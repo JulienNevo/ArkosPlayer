@@ -75,18 +75,18 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	//private int viewPortHeight = 1;
 	
 	/** Indicates if the shapes have been initialized. */
-	private boolean areShapesInitialized = false;
+	private boolean mAreShapesInitialized = false;
 	
 	/** Array of the equalizer bar shapes. */
-	private IShape3d[] equalizerBarShapes;
+	private IShape3d[] mEqualizerBarShapes;
 	
 	/** Provider of information about the sound produces, in order to display the equalizer. */
-	private ISongReader songReader;
+	private ISongReader mSongReader;
 
 	/** The accelerometer value in X. */
-	private float accelerometerValueX;
+	private float mAccelerometerValueX;
 	/** The accelerometer value in Y. */
-	private float accelerometerValueY;
+	private float mAccelerometerValueY;
 	
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -109,27 +109,27 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	 * @param songReader the SongReader.
 	 */
 	public void setSongReader(ISongReader songReader) {
-		this.songReader = songReader;
+		mSongReader = songReader;
 	}
 	
 	/**
 	 * Initializes the shapes. Must be done once.
 	 */
 	private void initializeShapes() {
-		if (areShapesInitialized) {
+		if (mAreShapesInitialized) {
 			return;
 		}
 		
-		areShapesInitialized = true;
+		mAreShapesInitialized = true;
 		
 		// Creates and initializes the bars.
-		equalizerBarShapes = new EqualizerBarShape[EQUALIZER_BAR_COUNT];
+		mEqualizerBarShapes = new EqualizerBarShape[EQUALIZER_BAR_COUNT];
 		float barPositionX = EQUALIZER_BAR_INITIAL_X;
 		float barPositionY = EQUALIZER_BAR_INITIAL_Y;
 		float barPositionZ = EQUALIZER_BAR_INITIAL_Z;
 		for (int i = 0; i < EQUALIZER_BAR_COUNT; i++) {
 			// Sets the bars as volume bars, except the last one.
-			equalizerBarShapes[i] = new EqualizerBarShape(barPositionX, barPositionY, barPositionZ, i < (EQUALIZER_BAR_COUNT - 1));
+			mEqualizerBarShapes[i] = new EqualizerBarShape(barPositionX, barPositionY, barPositionZ, i < (EQUALIZER_BAR_COUNT - 1));
 			barPositionX += EQUALIZER_BAR_X_SEPARATION;
 		}
 		
@@ -165,32 +165,32 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 		gl.glClearColor(BACKGROUND_RED, BACKGROUND_GREEN, BACKGROUND_BLUE, 1.0f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		
-		if (!areShapesInitialized) {
+		if (!mAreShapesInitialized) {
 			return;
 		}
 		
 		gl.glLoadIdentity();
 		
-		gl.glTranslatef(-accelerometerValueX / 6, 1, accelerometerValueY - 8.5f);
+		gl.glTranslatef(-mAccelerometerValueX / 6, 1, mAccelerometerValueY - 8.5f);
 		
 		
 		
 		// Gets the information for the equalizers.
-		if (songReader != null) {
+		if (mSongReader != null) {
 			// Reads the volume.
 			for (int channel = 1; channel <= 3; channel++) {
-				int volume = songReader.getVolumeChannel(channel);
-				((EqualizerBarShape)equalizerBarShapes[channel - 1]).setValue(volume);
+				int volume = mSongReader.getVolumeChannel(channel);
+				((EqualizerBarShape)mEqualizerBarShapes[channel - 1]).setValue(volume);
 			}
 			
 			// Reads the noise for the last bar. If no channel use the noise, we set its value to 0.
-			boolean isNoiseUsed = songReader.getNoiseChannels() != 0;
-			int noise = isNoiseUsed ? songReader.getNoiseValue() : 0;
-			((EqualizerBarShape)equalizerBarShapes[equalizerBarShapes.length - 1]).setValue(noise);
+			boolean isNoiseUsed = mSongReader.getNoiseChannels() != 0;
+			int noise = isNoiseUsed ? mSongReader.getNoiseValue() : 0;
+			((EqualizerBarShape)mEqualizerBarShapes[mEqualizerBarShapes.length - 1]).setValue(noise);
 		}
 		
 		// Displays the Equalizer Bars.
-		for (IShape3d shape : equalizerBarShapes) {
+		for (IShape3d shape : mEqualizerBarShapes) {
 			shape.draw(gl);
 		}
 	}
@@ -202,8 +202,8 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	 * @param z the Z value.
 	 */
 	public void setAccelerometerValue(float x, float y, float z) {
-		accelerometerValueX = x;
-		accelerometerValueY = y;
+		mAccelerometerValueX = x;
+		mAccelerometerValueY = y;
 	}
 
 

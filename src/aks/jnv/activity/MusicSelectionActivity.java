@@ -28,17 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package aks.jnv.view;
-
-import java.io.File;
+package aks.jnv.activity;
 
 import aks.jnv.R;
 import aks.jnv.adapter.MusicSelectionItem;
 import aks.jnv.adapter.MusicSelectionMusicItem;
 import aks.jnv.adapter.MusicSelectionAdapter;
 import aks.jnv.song.SongFormat;
-import aks.jnv.task.FindMusicRecursiveTask;
-import aks.jnv.task.FindMusicRecursiveTask.IFindMusicRecursiveTaskCallback;
 import aks.jnv.task.FindMusicTask;
 import aks.jnv.task.FindMusicTask.IFindMusicTaskCallback;
 import aks.jnv.util.FileUtils;

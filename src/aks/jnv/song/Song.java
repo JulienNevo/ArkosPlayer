@@ -39,18 +39,18 @@ package aks.jnv.song;
 public class Song {
 
 	/** The data of the song. */
-	private short[] data;
+	private byte[] mData;
 
 	/** The replay frequency of the song, in Hz (50hz, 25hz etc.). */
-	private int replayFrequency;
+	private int mReplayFrequency;
 	/** The frequency of the sound processor for which the song has been made, in Hz. */
-	private int PSGFrequency;
+	private int mPSGFrequency;
 	/** The name of the song. May be Null. */
-	private String name;
+	private String mSongName;
 	/** The author of the song. May be Null. */
-	private String author;
+	private String mAuthor;
 	/** The comments of the song. May be Null. */
-	private String comments;
+	private String mComments;
 	
 	/**
 	 * Constructor of a song.
@@ -61,13 +61,13 @@ public class Song {
 	 * @param author The author of the song. May be Null.
 	 * @param comments The comments of the song. May be Null.
 	 */
-	public Song(short[] data, int replayFrequency, int PSGFrequency, String name, String author, String comments) {
-		this.data = data;
-		this.replayFrequency = replayFrequency;
-		this.PSGFrequency = PSGFrequency;
-		this.name = name;
-		this.author = author;
-		this.comments = comments;
+	public Song(byte[] data, int replayFrequency, int PSGFrequency, String name, String author, String comments) {
+		mData = data;
+		mReplayFrequency = replayFrequency;
+		mPSGFrequency = PSGFrequency;
+		mSongName = name;
+		mAuthor = author;
+		mComments = comments;
 	}
 	
 	
@@ -80,7 +80,7 @@ public class Song {
 	 * @return the replay frequency of the song, in Hz.
 	 */
 	public int getReplayFrequency() {
-		return replayFrequency;
+		return mReplayFrequency;
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class Song {
 	 * @return the frequency of the sound processor for which the song has been made, in Hz.
 	 */
 	public int getPSGFrequency() {
-		return PSGFrequency;
+		return mPSGFrequency;
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class Song {
 	 * @return the name of the song.
 	 */
 	public String getName() {
-		return name;
+		return mSongName;
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class Song {
 	 * @return the author of the song.
 	 */
 	public String getAuthor() {
-		return author;
+		return mAuthor;
 	}
 
 	/**
@@ -112,15 +112,15 @@ public class Song {
 	 * @return the comments of the song.
 	 */
 	public String getComments() {
-		return comments;
+		return mComments;
 	}
 	
 	/**
 	 * Returns the data of the songs.
 	 * @return the data of the songs.
 	 */
-	public short[] getData() {
-		return data;
+	public byte[] getData() {
+		return mData;
 	}
 
 }

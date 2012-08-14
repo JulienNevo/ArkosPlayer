@@ -25,18 +25,19 @@ public final class R {
         public static final int stopicon=0x7f020008;
     }
     public static final class id {
-        public static final int currentpositiontextplaymusicactivity=0x7f07000a;
-        public static final int durationtextplaymusicactivity=0x7f07000b;
+        public static final int currentpositiontextplaymusicactivity=0x7f07000b;
+        public static final int durationtextplaymusicactivity=0x7f07000c;
         public static final int maintext=0x7f070004;
         public static final int music_selection_item_arrow_textview=0x7f070003;
         public static final int music_selection_item_layout=0x7f070001;
         public static final int music_selection_item_title_textview=0x7f070002;
         public static final int music_selection_listView=0x7f070000;
+        public static final int musicselectionmusicactivity=0x7f070009;
         public static final int nextbuttonplaymusicactivity=0x7f070008;
         public static final int pausebuttonplaymusicactivity=0x7f070007;
         public static final int playbuttonplaymusicactivity=0x7f070006;
         public static final int previousbuttonplaymusicactivity=0x7f070005;
-        public static final int seekbarplaymusicactivity=0x7f070009;
+        public static final int seekbarplaymusicactivity=0x7f07000a;
     }
     public static final class layout {
         public static final int music_selection=0x7f030000;

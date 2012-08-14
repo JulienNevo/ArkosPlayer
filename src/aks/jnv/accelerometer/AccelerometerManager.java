@@ -47,26 +47,26 @@ import android.hardware.SensorManager;
 public class AccelerometerManager {
 
 	/** Context in which is used the accelerometer. */
-	private static Context context;
+	private static Context mContext;
 	
 	/** SensorManager useful to unregister the listener. */
-	private static SensorManager sensorManager;
+	private static SensorManager mSensorManager;
 	
 	/** Sensor representing the hardware accelerometer used. */
-	private static Sensor sensor;
+	private static Sensor mSensor;
 	
 	/** The Accelerometer Event listener. */
-	private static AccelerometerEventListener sensorEventListener = new AccelerometerEventListener();
+	private static AccelerometerEventListener mSensorEventListener = new AccelerometerEventListener();
 	
 	/** Indicates whether the sensor is active. */
-	private static boolean isSensorActive = false;
+	private static boolean mIsSensorActive = false;
 
 	/**
 	 * Indicates whether the sensor is active.
 	 * @return true if the sensor is active.
 	 */
 	public static boolean isSensorActive() {
-		return isSensorActive;
+		return mIsSensorActive;
 	}
 	
 	/**
@@ -79,7 +79,7 @@ public class AccelerometerManager {
 	 * @param context the context in which the accelerometer is used.
 	 */
 	public static void setContext(Context context) {
-		AccelerometerManager.context = context;
+		 mContext = context;
 	}
 	
 	/**
@@ -89,7 +89,7 @@ public class AccelerometerManager {
 	public static boolean isAccelerometerPresent() {
 		
 		// We may already have found a sensor.
-		if (sensor != null) {
+		if (mSensor != null) {
 			return true;
 		}
 		
@@ -103,22 +103,22 @@ public class AccelerometerManager {
 	private static Sensor getAccelerometer() {
 		
 		// We may already have found a sensor.
-		if (sensor != null) {
-			return sensor;
+		if (mSensor != null) {
+			return mSensor;
 		}
 		
-		if (context != null) {
-			sensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
-			if (sensorManager != null) {
-				List<Sensor> list = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+		if (mContext != null) {
+			mSensorManager = (SensorManager)mContext.getSystemService(Context.SENSOR_SERVICE);
+			if (mSensorManager != null) {
+				List<Sensor> list = mSensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
 				if (list.size() > 0) {
 					// The first sensor found will do.
-					sensor = list.get(0);
+					mSensor = list.get(0);
 				}
 			}
 		}
 		
-		return sensor;
+		return mSensor;
 	}
 
 	/**
@@ -127,19 +127,19 @@ public class AccelerometerManager {
 	 * @return true if the sensor is active, and so if the listener has been connected.
 	 */
 	public static boolean startListening(IAccelerometerListener listener) {
-		isSensorActive = sensorManager.registerListener(sensorEventListener, getAccelerometer(), SensorManager.SENSOR_DELAY_GAME);
-		sensorEventListener.setListenerToAccelerometer(listener);
+		mIsSensorActive = mSensorManager.registerListener(mSensorEventListener, getAccelerometer(), SensorManager.SENSOR_DELAY_GAME);
+		mSensorEventListener.setListenerToAccelerometer(listener);
 		
-		return isSensorActive;
+		return mIsSensorActive;
 	}
 
 	/**
 	 * Makes the listener currently listening to the accelerometer, if any, stop listening.
 	 */
 	public static void stopListening() {
-		if ((sensorManager != null) && (sensorEventListener != null)) {
-			sensorManager.unregisterListener(sensorEventListener);
-			isSensorActive = false;
+		if ((mSensorManager != null) && (mSensorEventListener != null)) {
+			mSensorManager.unregisterListener(mSensorEventListener);
+			mIsSensorActive = false;
 		}
 		
 	}

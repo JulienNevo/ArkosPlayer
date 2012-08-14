@@ -95,7 +95,7 @@ public class SongUtil {
 	public static ISongReader getSongReaderFromFile(File musicFile) {
 		ISongReader songReader = null;
 		
-		short[] data;
+		byte[] data;
 		if ((data = YMSongReader.doesRawDataFit(musicFile)) != null) {
 			songReader = new YMSongReader(data);
 		} //else if (AKSSongReader.doesRawDataFit(is)) {
@@ -113,14 +113,14 @@ public class SongUtil {
 	 * @param index the index of the NT-String.
 	 * @return the String.
 	 */
-	public static String readNTString(short[] data, int index) {
+	public static String readNTString(byte[] data, int index) {
 		StringBuilder sb = new StringBuilder(10);
 		
 		int size = data.length;
 		boolean finished = false;
 		
 		while ((!finished) && (index < size)) {
-			short val = data[index];
+			int val = (data[index] & 0xff);
 			if (val != 0) {
 				sb.append((char)val);
 				index++;
@@ -134,22 +134,22 @@ public class SongUtil {
 	
 	/**
 	 * Reads a WORD (16 bits) from the given array, big-endian.
-	 * @param data the array to read.
-	 * @param index the index of the NT-String.
-	 * @return the WORD.
+	 * @param data The array to read.
+	 * @param index The index of the NT-String.
+	 * @return The WORD.
 	 */
-	public static int readWord(short[] data, int index) {
-		return (data[index++] << 8) + data[index];
+	public static int readWord(byte[] data, int index) {
+		return ((data[index++] & 0xff) << 8) + (data[index] & 0xff);
 	}
 	
 	/**
 	 * Reads a DWORD (32 bits) from the given array, big-endian.
-	 * @param data the array to read.
-	 * @param index the index of the NT-String.
-	 * @return the DWORD.
+	 * @param data The array to read.
+	 * @param index The index of the NT-String.
+	 * @return The DWORD.
 	 */
-	public static int readDWord(short[] data, int index) {
-		return (data[index++] << 24) + (data[index++] << 16) + (data[index++] << 8) + data[index];
+	public static int readDWord(byte[] data, int index) {
+		return ((data[index++] & 0xff) << 24) + ((data[index++] & 0xff) << 16) + ((data[index++] & 0xff) << 8) + (data[index] & 0xff);
 	}
 	
 	

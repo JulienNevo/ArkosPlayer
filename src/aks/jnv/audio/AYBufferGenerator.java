@@ -146,9 +146,9 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	public int hardwareEnveloppe;			    // Hardware Envelope used by the Hardware volume. Value from 0 to 0xf. Never contains 0xff.
 
 
-	private short[] sampleA;					// Pointers to the sample of channel A. Null means no sample is played.
-	private short[] sampleB;					// This is how are detected that a sample must be played.
-	private short[] sampleC;
+	private byte[] sampleA;						// Pointers to the sample of channel A. Null means no sample is played.
+	private byte[] sampleB;						// This is how are detected that a sample must be played.
+	private byte[] sampleC;
 
 	private float sampleAIndex;					// Index on the sample of channel A.
 	private float sampleBIndex;
@@ -352,7 +352,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 			
 			// Calculates if we need new PSG registers according to the replay frequency of the song.
 			if (++playerPeriodCounter > playerPeriod) {
-				short[] regs = songReader.getNextRegisters();
+				int[] regs = songReader.getNextRegisters();
 				interpretRegisters(regs);
 				
 				playerPeriodCounter = 0;
@@ -483,9 +483,9 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 				}
 
 				// Converts the 4-bit volume to output volume. Samples have priority.
-				outputVolumeA = (sampleA == null ? volumes[cVolumeA] : volumes[sampleA[(int)sampleAIndex]]);
-				outputVolumeB = (sampleB == null ? volumes[cVolumeB] : volumes[sampleB[(int)sampleBIndex]]);
-				outputVolumeC = (sampleC == null ? volumes[cVolumeC] : volumes[sampleC[(int)sampleCIndex]]);
+				outputVolumeA = (sampleA == null ? volumes[cVolumeA] : volumes[sampleA[(int)sampleAIndex] & 0xff]);
+				outputVolumeB = (sampleB == null ? volumes[cVolumeB] : volumes[sampleB[(int)sampleBIndex] & 0xff]);
+				outputVolumeC = (sampleC == null ? volumes[cVolumeC] : volumes[sampleC[(int)sampleCIndex] & 0xff]);
 
 				// Adds the volume found to the sum. If the step is inside the "integer" part of the Steps, the full value written.
 				// Else, only a "decimal" of it.
@@ -544,7 +544,7 @@ public class AYBufferGenerator implements IAudioBufferGenerator {
 	 * Interprets the given registers to fill usable variables.
 	 * @param regs the PSG registers to interpret.
 	 */
-	private void interpretRegisters(short[] regs) {
+	private void interpretRegisters(int[] regs) {
 		int r3 = regs[3];
 		int r8 = regs[8];
 		int r9 = regs[9];

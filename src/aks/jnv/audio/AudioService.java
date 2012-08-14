@@ -32,9 +32,9 @@ package aks.jnv.audio;
 
 import java.io.File;
 import aks.jnv.R;
+import aks.jnv.activity.PlayMusicActivity;
 import aks.jnv.reader.ISongReader;
 import aks.jnv.song.SongUtil;
-import aks.jnv.view.PlayMusicActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -96,10 +96,10 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	private int NOTIFICATION_ID = R.string.local_service_name;
 	
 	/** Binder accessed by the client, to have an access to the Service. */
-	private final IBinder binder = new LocalBinder();
+	private final IBinder mBinder = new LocalBinder();
 	
 	/** The information of the song (name, author, format...). May be Null. */
-	private SongInformation mSongInformation;
+	//private SongInformation mSongInformation;
 	
 	/** The current seek position in seconds. */
 	private int mCurrentSeekPosition;
@@ -188,7 +188,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return binder;
+		return mBinder;
 	}
 	
 	/**
@@ -303,7 +303,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 			if (mSongReader == null) {
 				Log.e(DEBUG_TAG, "Song format unknown ! " + file.getName());
 				// FIXME handle unknown format song.
-				mSongInformation = null;
+				//mSongInformation = null;
 			} else {
 				Notification notification = new Notification(R.drawable.ic_launcher, "Playing song.", System.currentTimeMillis());
 				
@@ -332,9 +332,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 				
 				//audioRenderer.startSound();
 				
-				mSongInformation = new SongInformation(mSongReader.getName(),
-						mSongReader.getAuthor(), mSongReader.getComments(), mSongReader.getFormat(),
-						mSongReader.getDuration());
+//				mSongInformation = new SongInformation(mSongReader.getName(),
+//						mSongReader.getAuthor(), mSongReader.getComments(), mSongReader.getFormat(),
+//						mSongReader.getDuration());
 							
 				
 				Intent intent = new Intent(ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE);
@@ -347,9 +347,14 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 			}
 		}
 		
-		// In all case, starts the Audio Renderer.
-		mAudioRenderer.startSound();
 		
+		if ((mSongReader == null) && (mAudioRenderer != null)) {
+			// Stops the current song if the new one is not a valid song.
+			stopSong();
+		} else {
+			// In all case, starts the Audio Renderer.
+			mAudioRenderer.startSound();
+		}
 	}
 
 
@@ -473,10 +478,10 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	}
 
 
-	@Override
-	public SongInformation getSongInformation() {
-		return mSongInformation;
-	}
+//	@Override
+//	public SongInformation getSongInformation() {
+//		return mSongInformation;
+//	}
 	
 	@Override
 	public int getCurrentSeekPosition() {

@@ -53,12 +53,15 @@ public class FileUtils {
 	private static final String DEBUG_TAG = "FileUtils";
 	
  	/** Folder where is the music. */
-	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
+	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/";
 	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Follin.Bros/";
-	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Whittacker.David/";
+	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Whittacker.David/";
 
 	/** Dot character such as the ones found in file extensions. */
 	private static final char DOT_CHAR = '.'; 
+	
+	/** The size of the buffer for reading files. */
+	private static final int BUFFER_SIZE = 16384;
 	
 //	/**
 //	 * Indicates if an external storage is available for reading (or read/write).
@@ -121,9 +124,7 @@ public class FileUtils {
 	
 	
 	
-	
-	/** The size of the buffer for reading files. */
-	private static final int BUFFER_SIZE = 16384;
+
 	
 	/**
      * Reads the bytes of an input stream.
@@ -152,7 +153,7 @@ public class FileUtils {
 	        	buffer.flush();
 	        	result = buffer.toByteArray();
         	} catch (IOException e) {
-        		e.printStackTrace();
+        		Log.e(DEBUG_TAG, e.getMessage());
         	} finally {
         		if (buffer != null) { buffer.close(); }
         		inputStream.close();
@@ -172,51 +173,10 @@ public class FileUtils {
 		short[] shortArray = new short[size];
 		
 		for (int i = 0; i < size; i++) {
-			//shortArray[i] = dataByte[i];
 			shortArray[i] = (short)(dataByte[i] & 0xff);
 		}
 		return shortArray;
 	}
-	
-	/**
-	 * Opens the given input stream and unpack it if it contains a LHA file. Else, returns an array of bytes.
-	 * @param is the input stream of a LHA file, or of a normal file.
-	 * @return an array of bytes.
-	 * @throws IOException 
-	 */
-//	public static byte[] unpackLHAFile(InputStream is) throws IOException {
-//		
-//		/*
-//		// CRASHES if not a LHA file ! We'll have to open the stream, test it, if not good, close it, open a new one, get the array.
-//		LhaInputStream lis = new LhaInputStream(is);
-//
-//		byte[] data = null;
-//		if (lis.getNextEntry() != null) {
-//			data = readInputStream(lis);
-//		}
-//		*/
-//		
-//		byte[] data = readInputStream(is);		
-//		//is.mark(0);
-//		
-//		//byte[] header = new byte[length];
-//		//int nbBytesRead = is.read(data, 0, length);
-//		
-//		// Test a (relevant ??) header.
-//		if ((data.length > 4) && ((data[3] == 'l') && (data[4] == 'h'))) {
-//			// The file "should" be a LHA file.
-//			is.reset();
-//			LhaInputStream lis = new LhaInputStream(is);
-//
-//			if (lis.getNextEntry() != null) {
-//				data = readInputStream(lis);
-//			}	
-//		}
-//		
-//		
-//		return data;
-//	}
-	
 	
 	/**
 	 * Unpacks the given LHA file. If the file isn't present or isn't a LHA file, nothing happens.
@@ -233,10 +193,8 @@ public class FileUtils {
 		try {
 			lhaFile = new LhaFile(musicFile);
 			LhaEntry entry = lhaFile.getEntry(0);
-			//int length = (int)entry.getOriginalSize();
 			is = new BufferedInputStream(lhaFile.getInputStream(entry), BUFFER_SIZE);
 			data = readInputStream(is);
-			//int nbBytesRead = is.read(data, 0, length);
 		} catch (Exception e) {
 			Log.e(DEBUG_TAG, "Error while opening the possible LHA file.");
 			data = null;

@@ -46,21 +46,21 @@ public class AccelerometerEventListener implements SensorEventListener {
 	private static final int NB_PREVIOUS_VALUES_STORED = 5;
 
 	/** Array storing the previous X positions of the accelerometer. */
-	private float[] previousValuesX = new float[NB_PREVIOUS_VALUES_STORED];
+	private float[] mPreviousValuesX = new float[NB_PREVIOUS_VALUES_STORED];
 	/** Array storing the previous Y positions of the accelerometer. */
-	private float[] previousValuesY = new float[NB_PREVIOUS_VALUES_STORED];
+	private float[] mPreviousValuesY = new float[NB_PREVIOUS_VALUES_STORED];
 	/** Array storing the previous Z positions of the accelerometer. */
-	private float[] previousValuesZ = new float[NB_PREVIOUS_VALUES_STORED];
+	private float[] mPreviousValuesZ = new float[NB_PREVIOUS_VALUES_STORED];
 
 	/** The listener to the accelerometer values change. */
-	private IAccelerometerListener listener;
+	private IAccelerometerListener mListener;
 	
 	/**
 	 * Indicates what listener to refer to when the accelerometer values change.
 	 * @param listener the listener to refer to when the accelerometer values change.
 	 */
 	public void setListenerToAccelerometer(IAccelerometerListener listener) {
-		this.listener = listener;
+		mListener = listener;
 	}
 	
 	@Override
@@ -70,13 +70,13 @@ public class AccelerometerEventListener implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// Linearizes the values of the accelerometer.
-		shiftPreviousValuesArrayAndSetNewValue(previousValuesX, event.values[0]);
-		shiftPreviousValuesArrayAndSetNewValue(previousValuesY, event.values[1]);
-		shiftPreviousValuesArrayAndSetNewValue(previousValuesZ, event.values[2]);
+		shiftPreviousValuesArrayAndSetNewValue(mPreviousValuesX, event.values[0]);
+		shiftPreviousValuesArrayAndSetNewValue(mPreviousValuesY, event.values[1]);
+		shiftPreviousValuesArrayAndSetNewValue(mPreviousValuesZ, event.values[2]);
 		
 		// Inform the listener of the new values.
-		if (listener != null) {
-			listener.onAccelerationChanged(getAverage(previousValuesX), getAverage(previousValuesY), getAverage(previousValuesZ));
+		if (mListener != null) {
+			mListener.onAccelerationChanged(getAverage(mPreviousValuesX), getAverage(mPreviousValuesY), getAverage(mPreviousValuesZ));
 		}
 	}
 

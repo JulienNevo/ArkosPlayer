@@ -74,7 +74,8 @@ public class AKSSongReader implements ISongReader {
 	 * The doesRawDataFit method must have been called before to ensure that.
 	 * @param data the raw binary data of the song.
 	 */
-	public AKSSongReader(short[] data) {
+	//public AKSSongReader(short[] data) {
+	public AKSSongReader(byte[] data) {
 		readSongInformation(data);
 		song = new Song(data, replayFrequency, PSGFrequency, null, null, null);
 	}
@@ -102,7 +103,7 @@ public class AKSSongReader implements ISongReader {
 	}
 	
 	@Override
-	public short[] getSample(int sampleNumber) {
+	public byte[] getSample(int sampleNumber) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -143,7 +144,8 @@ public class AKSSongReader implements ISongReader {
 	 * The Song MUST be in the correct format. The doesRawDataFit method must have been called before to ensure that.
 	 * @param data the raw binary data of the song.
 	 */
-	private void readSongInformation(short[] data) {
+	//private void readSongInformation(short[] data) {
+	private void readSongInformation(byte[] data) {
 		// TODO ***********************
 	}
 	
@@ -154,7 +156,7 @@ public class AKSSongReader implements ISongReader {
 
 	
 	@Override
-	public short[] getNextRegisters() {
+	public int[] getNextRegisters() {
 		return null;
 	}
 

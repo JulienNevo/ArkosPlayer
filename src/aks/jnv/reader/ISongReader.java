@@ -54,7 +54,7 @@ public interface ISongReader {
 	 * Returns the registers of the next frame of the song.
 	 * @return the registers of the next frame of the song.
 	 */
-	short[] getNextRegisters();
+	int[] getNextRegisters();
 	
 	/**
 	 * Seeks to the given second in the song.
@@ -81,7 +81,7 @@ public interface ISongReader {
 	 * @param sampleNumber the zero-based index of the sample.
 	 * @return the sample, or Null.
 	 */
-	short[] getSample(int sampleNumber);
+	byte[] getSample(int sampleNumber);
 	
 	
 	/**

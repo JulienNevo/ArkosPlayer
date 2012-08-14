@@ -73,7 +73,7 @@ public interface IAudioService {
 	 * Returns the song information of the current song. Returns Null if no song if song is loaded.
 	 * @return the song information of the current song, or Null.
 	 */
-	SongInformation getSongInformation();
+	//SongInformation getSongInformation();
 	
 	/**
 	 * Returns the current seek position of the current song, in seconds. Returns 0 if no song if song is loaded.

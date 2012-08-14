@@ -50,45 +50,31 @@ public class AudioRenderer extends Thread {
 	/** The debug tag of this class. */
 	public static final String DEBUG_TAG = AudioRenderer.class.getSimpleName();
 	
+	/** Sample rate in Hz. */
+	private static final int SAMPLE_RATE = 44100;
+	
 	/** The Audio Buffer Generator that will fill the buffer before we send it to the sound card. */
-	private IAudioBufferGenerator audioBufferGenerator;
+	private IAudioBufferGenerator mAudioBufferGenerator;
 	
 	/** The AudioTrack used to perform the sound. */
-	private AudioTrack audioTrack;
-	
-	/** Sample rate in Hz. */
-	private int sampleRate = 44100; //16000
-	
-	/** Bit rate (8, 16 bits). */
-	//private int bitRate = 16;
-	
-	/** Channel count (1 for mono). */
-	private int nbChannels = 2;
-	
-	
-	
+	private AudioTrack mAudioTrack;
 	
 	/** Indicates if the AudioTrack has been initialized. */
-	private boolean isInitialized;
+	private boolean mIsInitialized;
 	
 	/** Size in bytes of the output buffer. */
-	private int outputBufferSize;
+	private int mOutputBufferSize;
 	
 	/** The outputBuffer to fill and sent to the AudioTrack. */
-	private short[] outputBuffer;
-	
-	
-	
-	
+	private short[] mOutputBuffer;
 	
 	/** Indicates whether the thread has started.*/
-	private boolean threadStarted;
-	
+	private boolean mThreadStarted;
 	/** Indicates whether the thread has to stop.*/
-	private boolean threadMustStop;
+	private boolean mThreadMustStop;
 	
 	/** Indicates if the AudioTrack is ready to be filled.*/
-	private boolean readyToBeFilled;
+	private boolean mReadyToBeFilled;
 	
 	
 	
@@ -100,20 +86,16 @@ public class AudioRenderer extends Thread {
 	 * Sets the Audio Buffer Generator. It must be done before setting the Song Reader.
 	 */
 	public void setAudioBufferGenerator(IAudioBufferGenerator audioBufferGenerator) {
-		this.audioBufferGenerator = audioBufferGenerator;
+		this.mAudioBufferGenerator = audioBufferGenerator;
 	}
 
-//	public IAudioBufferGenerator getAudioBufferGenerator() {
-//		return audioBufferGenerator;
-//	}
-	
 	/**
 	 * Sets the Song Reader to be used by the AudioBufferGenerator. It must be done after the AudioBufferGenerator sampleRate has been set.
 	 * @param songReader the Song reader to use.
 	 */
 	public void setSongReader(ISongReader songReader) {
-		if (audioBufferGenerator != null) {
-			audioBufferGenerator.initialize(songReader);
+		if (mAudioBufferGenerator != null) {
+			mAudioBufferGenerator.initialize(songReader);
 		}
 	}
 	
@@ -122,7 +104,7 @@ public class AudioRenderer extends Thread {
 	 * @return the sample rate used to render the song.
 	 */
 	public int getSampleRate() {
-		return sampleRate;
+		return SAMPLE_RATE;
 	}
 
 	
@@ -134,7 +116,7 @@ public class AudioRenderer extends Thread {
      * Starts playing the sound.
      */
 	public void startSound() {
-		if (threadMustStop || threadStarted || !audioBufferGenerator.isReady()) {
+		if (mThreadMustStop || mThreadStarted || !mAudioBufferGenerator.isReady()) {
 //			Log.e(DEBUG_TAG, "Thread won't start because not the right conditions.");
 //			Log.e(DEBUG_TAG, "ThreadMustStop = " + threadMustStop);
 //			Log.e(DEBUG_TAG, "threadStarted = " + threadStarted);
@@ -146,8 +128,8 @@ public class AudioRenderer extends Thread {
 		
 		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 		
-		audioTrack.flush();
-		audioTrack.play();
+		mAudioTrack.flush();
+		mAudioTrack.play();
 		
 		super.start();
 		
@@ -157,8 +139,8 @@ public class AudioRenderer extends Thread {
      * Stops the sound.
      */
     public void stopSound() {
-    	if (isInitialized) {
-    		threadMustStop = true;
+    	if (mIsInitialized) {
+    		mThreadMustStop = true;
     		//isInitialized = false;
     		
     		try {
@@ -175,34 +157,34 @@ public class AudioRenderer extends Thread {
 	public void run() {
 		//Log.e(DEBUG_TAG, "Thread.run");
 		
-		threadStarted = true;
+		mThreadStarted = true;
 		
-		if (!isInitialized) {
+		if (!mIsInitialized) {
 			//initialize();
 			//Log.e(DEBUG_TAG, "Thread not initialized.");
 			return;
 		}
 		
 		// "Infinite loop", generating and playing the sounds as long as needed.
-		while (!threadMustStop) {
-			if (!readyToBeFilled) {
+		while (!mThreadMustStop) {
+			if (!mReadyToBeFilled) {
 				// Makes sure the AudioTrack is ready to receive our data !
-				readyToBeFilled = (audioTrack.getState() == AudioTrack.STATE_INITIALIZED);
+				mReadyToBeFilled = (mAudioTrack.getState() == AudioTrack.STATE_INITIALIZED);
 			} else {
 				// Fills the output buffer with our generated samples.
 				generateBuffer();
-				audioTrack.write(outputBuffer, 0, outputBufferSize);
+				mAudioTrack.write(mOutputBuffer, 0, mOutputBufferSize);
 			}
 		}
 		
-		threadStarted = false;
-		threadMustStop = false;
+		mThreadStarted = false;
+		mThreadMustStop = false;
 		
-		audioTrack.flush();
-		audioTrack.stop();
-		audioTrack.release();
-		audioTrack = null;
-		isInitialized = false;
+		mAudioTrack.flush();
+		mAudioTrack.stop();
+		mAudioTrack.release();
+		mAudioTrack = null;
+		mIsInitialized = false;
 		
 		//Log.e(DEBUG_TAG, "Thread is dead.");
 	}
@@ -212,8 +194,8 @@ public class AudioRenderer extends Thread {
 	 * @param seconds the new seek position in seconds.
 	 */
 	public void seek(int seconds) {
-		if (audioBufferGenerator != null) {
-			audioBufferGenerator.seek(seconds);
+		if (mAudioBufferGenerator != null) {
+			mAudioBufferGenerator.seek(seconds);
 		}
 	}
 	
@@ -223,22 +205,21 @@ public class AudioRenderer extends Thread {
 	 * Must be performed again after the sound has been stopped.
 	 */
 	private void initialize() {
-		if (!isInitialized) {
-			int nbChannelsFlag = (nbChannels == 1) ? AudioFormat.CHANNEL_OUT_MONO : AudioFormat.CHANNEL_OUT_STEREO;
-			outputBufferSize = AudioTrack.getMinBufferSize(sampleRate, nbChannelsFlag, AudioFormat.ENCODING_PCM_16BIT);
+		if (!mIsInitialized) {
+			mOutputBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
 			
-			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, nbChannelsFlag,
-					AudioFormat.ENCODING_PCM_16BIT, outputBufferSize, AudioTrack.MODE_STREAM);
+			mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, AudioFormat.CHANNEL_OUT_STEREO,
+					AudioFormat.ENCODING_PCM_16BIT, mOutputBufferSize, AudioTrack.MODE_STREAM);
 			
 			// Creates a new buffer, unless it's not necessary.
-			if ((outputBuffer == null) || ((outputBuffer != null) && (outputBuffer.length != outputBufferSize))) {
-				outputBuffer = new short[outputBufferSize];
+			if ((mOutputBuffer == null) || ((mOutputBuffer != null) && (mOutputBuffer.length != mOutputBufferSize))) {
+				mOutputBuffer = new short[mOutputBufferSize];
 			}
 			
 			clearBuffer();
 			
-			isInitialized = true;
-			threadMustStop = false;
+			mIsInitialized = true;
+			mThreadMustStop = false;
 		}
 	}
 
@@ -246,8 +227,8 @@ public class AudioRenderer extends Thread {
 	 * Clears the buffer.
 	 */
 	private void clearBuffer() {
-		for (int i = 0; i < outputBufferSize; ++i) {
-			outputBuffer[i] = 0;
+		for (int i = 0; i < mOutputBufferSize; ++i) {
+			mOutputBuffer[i] = 0;
 		}
 	}
 
@@ -255,11 +236,11 @@ public class AudioRenderer extends Thread {
 	 * Fills the outputBuffer with a generated sound.
 	 */
 	private void generateBuffer() {
-		if ((outputBuffer == null) || (audioBufferGenerator == null)) {
+		if ((mOutputBuffer == null) || (mAudioBufferGenerator == null)) {
 			return;
 		}
 		
-		audioBufferGenerator.generateAudioBuffer(outputBuffer);
+		mAudioBufferGenerator.generateAudioBuffer(mOutputBuffer);
 	}
 	
 }

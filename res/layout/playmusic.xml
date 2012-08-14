@@ -68,6 +68,12 @@
 	 	        android:layout_width="60dp"
 		  		android:layout_height="60dp"
 	 	        />
+	 	    <Button
+	 	        android:id="@+id/musicselectionmusicactivity"
+	 	        android:background="@android:drawable/ic_menu_search"
+	 	        android:layout_width="60dp"
+		  		android:layout_height="60dp"
+	 	        />
 	 	    
 	 </LinearLayout>
 	  

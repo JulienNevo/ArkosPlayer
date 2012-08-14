@@ -53,29 +53,29 @@ public class EqualizerBarShape implements IShape3d {
 	private static final float MINIMUM_HEIGHT = 0.01f;
 
 	/** The number of vertices. */
-	private int verticesCount = 0;
+	private int mVerticesCount = 0;
 	
 	/** The buffer of the vertices. */
-	private FloatBuffer vertexBuffer;
+	private FloatBuffer mVertexBuffer;
 	/** The buffer of the indices of the vertices to draw. */
-	private ShortBuffer indexBuffer;
+	private ShortBuffer mIndexBuffer;
 	/** The buffer of the colors of each vertices. */
-	private FloatBuffer colorBuffer;
+	private FloatBuffer mColorBuffer;
 	/** The buffer of the colors of each vertices for the hardware envelope. */
-	private FloatBuffer colorHardEnvelopeBuffer;
+	private FloatBuffer mColorHardEnvelopeBuffer;
 
 	/** The X position of the object. */
-	private float positionX;
+	private float mPositionX;
 	/** The Y position of the object. */
-	private float positionY;
+	private float mPositionY;
 	/** The Z position of the object. */
-	private float positionZ;
+	private float mPositionZ;
 
 	/** The value to be shown by the bar. */
-	private int value;
+	private int mValue;
 	
 	/** Indicates ifthe bar is a volume bar or a noise bar.*/
-	private boolean isVolumeBar;
+	private boolean mIsVolumeBar;
 
 //	private float angleX;	//FIXME REMOVE ME TRY.
 //	private float angleY;
@@ -143,7 +143,7 @@ public class EqualizerBarShape implements IShape3d {
 	 * @param isVolumeBar true if the bar is about volume, false for a noise bar.
 	 */
 	public EqualizerBarShape(float x, float y, float z, boolean isVolumeBar) {
-		this.isVolumeBar = isVolumeBar;
+		mIsVolumeBar = isVolumeBar;
 		setPosition(x, y, z);
 		
 		float[] vertices = new float[] {
@@ -213,11 +213,11 @@ public class EqualizerBarShape implements IShape3d {
 				COLOR_R_HARD_ENVELOPE_BAR2, COLOR_G_HARD_ENVELOPE_BAR2, COLOR_B_HARD_ENVELOPE_BAR2, COLOR_A_HARD_ENVELOPE_BAR2,
 		};
 			
-		verticesCount = indices.length;
-		vertexBuffer = GLBuffersUtils.getVertexBuffer(vertices);
-		indexBuffer = GLBuffersUtils.getIndexBuffer(indices);
-		colorBuffer = GLBuffersUtils.getColorBuffer(colors);
-		colorHardEnvelopeBuffer = GLBuffersUtils.getColorBuffer(colorsHardEnvelope);
+		mVerticesCount = indices.length;
+		mVertexBuffer = GLBuffersUtils.getVertexBuffer(vertices);
+		mIndexBuffer = GLBuffersUtils.getIndexBuffer(indices);
+		mColorBuffer = GLBuffersUtils.getColorBuffer(colors);
+		mColorHardEnvelopeBuffer = GLBuffersUtils.getColorBuffer(colorsHardEnvelope);
 	}
 	
 	/**
@@ -225,15 +225,15 @@ public class EqualizerBarShape implements IShape3d {
 	 * @param value the value to be displayed.
 	 */
 	public void setValue(int value) {
-		this.value = value;
+		mValue = value;
 	}
 	
 	
 	@Override
 	public void setPosition(float x, float y, float z) {
-		positionX = x;
-		positionY = y;
-		positionZ = z;
+		mPositionX = x;
+		mPositionY = y;
+		mPositionZ = z;
 	}
 	
 	@Override
@@ -245,48 +245,48 @@ public class EqualizerBarShape implements IShape3d {
 		
 		//positionZ -= 0.02;
 		
-		int maxValue = isVolumeBar ? 15 : 31;
+		int maxValue = mIsVolumeBar ? 15 : 31;
 		
 		// Calculates the height according to the volume.
 		boolean isHardEnvelope = false;
 		float heightRatio;
-		if (value <= 0) {
+		if (mValue <= 0) {
 			heightRatio = MINIMUM_HEIGHT;
 		} else {
-			if (value <= maxValue) { 
-				heightRatio = value;
+			if (mValue <= maxValue) { 
+				heightRatio = mValue;
 			} else {
-				isHardEnvelope = isVolumeBar;	// The hardware envelope flag can only be used for a volume bar.
+				isHardEnvelope = mIsVolumeBar;	// The hardware envelope flag can only be used for a volume bar.
 				heightRatio = maxValue;
 			}
 			
 			// Noise has twice more value. We need to shrink it.
-			if (!isVolumeBar) {
+			if (!mIsVolumeBar) {
 				heightRatio /= 2;
 			//heightRatio = 15;
 			}
 		}
 		
-		gl.glTranslatef(positionX, positionY, positionZ);
+		gl.glTranslatef(mPositionX, mPositionY, mPositionZ);
 
 		gl.glScalef(1, 1 * heightRatio, 1);
 		
 //		gl.glRotatef(angleX, 1, 0, 0);
 //		gl.glRotatef(angleY, 0, 1, 0);
 		
-		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, vertexBuffer);
+		gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
 		// Uses the color buffer according to whether the value is "normal" or represents a hardware envelope.
-		gl.glColorPointer(4, GL10.GL_FLOAT, 0, isHardEnvelope ? colorHardEnvelopeBuffer : colorBuffer);
+		gl.glColorPointer(4, GL10.GL_FLOAT, 0, isHardEnvelope ? mColorHardEnvelopeBuffer : mColorBuffer);
 		
 		// Draw the vertices.
-		gl.glDrawElements(GL10.GL_TRIANGLES, verticesCount, GL10.GL_UNSIGNED_SHORT, indexBuffer);
+		gl.glDrawElements(GL10.GL_TRIANGLES, mVerticesCount, GL10.GL_UNSIGNED_SHORT, mIndexBuffer);
 		
 //		gl.glRotatef(-angleY, 0, 1, 0);
 		//gl.glRotatef(-angleX, 1, 0, 0);
 		
 		gl.glScalef(1, 1 / heightRatio, 1);
 		
-		gl.glTranslatef(-positionX, -positionY, -positionZ);
+		gl.glTranslatef(-mPositionX, -mPositionY, -mPositionZ);
 		
 	}
 

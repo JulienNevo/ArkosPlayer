@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package aks.jnv.view;
+package aks.jnv.activity;
 
 import java.io.File;
 
@@ -55,14 +55,8 @@ import android.widget.TextView;
  * Activity used to see the music being played, information about it, command button, and a seek bar.
  * 
  * TODO :
- * - Crash if pause then play.
  * - Handle unknown format song (next song if possible ?).
- * - (Digidrums frequency ok??).
  * - Cybern2 doesn't crash, but strange looping ending. Cybern3 (YM6) is good though.
- * - Bionic Commando 1 doesn't work at all (0 second).
- * - Digidrums handled as Short !
- * - Data read handled as Short.
- * - Service is static in FirstActivity... Make AudioService a Singleton !?
  * - Service stuttering : Maybe a "process" in the xml would be enough ?
  * 						  http://www.vogella.de/articles/AndroidServices/article.html
  * 						  <!-- android:process=":my_process" -->
@@ -115,11 +109,15 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	private Button mPreviousButton;
 	/** The Pause button. It may be invisible. */
 	private Button mPauseButton;
+	/** The Selection Music button. */
+	private Button mSelectMusic;
 	/** The possible song being played. */
 	private File mSong;
 
 	/** BroadcastReceiver to get Intents from the Audio Service. */
 	private BroadcastReceiver mAudioBroadcastReceiver;
+
+
 	
 	// FIXME Remove the GLView because it's really CPU consuming!
 	//private EqualizerGLSurfaceView glSurfaceView;
@@ -154,6 +152,8 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		
 		mNextButton = (Button)findViewById(R.id.nextbuttonplaymusicactivity);
 		mPreviousButton = (Button)findViewById(R.id.previousbuttonplaymusicactivity);
+		
+		mSelectMusic = (Button)findViewById(R.id.musicselectionmusicactivity);
 		
 		mSeekBar = (SeekBar)findViewById(R.id.seekbarplaymusicactivity);
 		
@@ -248,6 +248,16 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 					int seekPosition = seekBar.getProgress();
 					updatePositionTextViews(seekPosition, mSongDurationInSeconds);
 				}
+			}
+		});
+		
+		mSelectMusic.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// Opens the Music Selection Activity.
+				Intent intent = new Intent(PlayMusicActivity.this, MusicSelectionActivity.class);
+				startActivity(intent);
 			}
 		});
 		

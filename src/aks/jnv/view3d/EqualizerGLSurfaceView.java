@@ -47,7 +47,7 @@ import android.util.AttributeSet;
 public class EqualizerGLSurfaceView extends GLSurfaceView implements IAccelerometerListener {
 
 	/** The renderer. */
-	private EqualizerGLSurfaceRenderer renderer;
+	private EqualizerGLSurfaceRenderer mRenderer;
 	
 	/**
 	 * Constructor of the GLSurfaceView. MUST be used in favor of the one-argument constructor,
@@ -59,8 +59,8 @@ public class EqualizerGLSurfaceView extends GLSurfaceView implements IAccelerome
 		super(context, attrs);
 		
 		// Sets the renderer to use.
-		renderer = new EqualizerGLSurfaceRenderer();
-		setRenderer(renderer);
+		mRenderer = new EqualizerGLSurfaceRenderer();
+		setRenderer(mRenderer);
 	}
 
 	/**
@@ -68,11 +68,11 @@ public class EqualizerGLSurfaceView extends GLSurfaceView implements IAccelerome
 	 * @param songReader the SongReader.
 	 */
 	public void setSongReader(ISongReader songReader) {
-		renderer.setSongReader(songReader);
+		mRenderer.setSongReader(songReader);
 	}
 
 	@Override
 	public void onAccelerationChanged(float x, float y, float z) {
-		renderer.setAccelerometerValue(x, y, z);		
+		mRenderer.setAccelerometerValue(x, y, z);		
 	}
 }
