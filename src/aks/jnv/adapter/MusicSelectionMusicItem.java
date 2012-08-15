@@ -30,7 +30,6 @@
 package aks.jnv.adapter;
 
 import aks.jnv.song.SongFormat;
-import aks.jnv.util.FileUtils;
 
 /**
  * Very simple class holding information about an item of the music selection Activity.
@@ -60,6 +59,4 @@ public class MusicSelectionMusicItem extends MusicSelectionItem {
 	public SongFormat getSongFormat() {
 		return mSongFormat;
 	}
-
-	
 }

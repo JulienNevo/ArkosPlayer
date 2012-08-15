@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import aks.jnv.R;
-import aks.jnv.util.FileUtils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -51,7 +50,7 @@ public class MusicSelectionAdapter extends BaseAdapter {
 	private static Drawable mDrawableFolder;
 	/** Cached Drawable for the YM icon. */
 	private static Drawable mDrawableYM;
-	/** Cached Drawable for the AKS icon. */
+	/** Cached Drawable for the AKS icon. */ 
 	private static Drawable mDrawableAKS;
 	/** Cached Drawable for the SKS icon. */
 	private static Drawable mDrawableSKS;
@@ -196,7 +195,7 @@ public class MusicSelectionAdapter extends BaseAdapter {
 		boolean isFolder = item.isFolder();
 		
 		// Keeps only a short name without the extension.
-		String musicShortName = FileUtils.removeExtension(item.getShortName());
+		String musicShortName = item.getShortName();
 		TextView textView = viewHolder.titleTextView;
 		//LinearLayout layout = viewHolder.layout;
 		textView.setText(musicShortName);

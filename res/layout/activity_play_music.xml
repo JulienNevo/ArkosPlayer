@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- Layout for the PLay Music Activity. -->
 <!-- A FrameLayout is used to have, on the background, the 3D View, and in the foreground, the main UI. -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

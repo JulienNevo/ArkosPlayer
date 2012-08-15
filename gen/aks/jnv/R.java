@@ -20,29 +20,35 @@ public final class R {
         public static final int ic_launcher=0x7f020003;
         public static final int icon_aks=0x7f020004;
         public static final int icon_sks=0x7f020005;
-        public static final int pauseicon=0x7f020006;
-        public static final int playicon=0x7f020007;
-        public static final int stopicon=0x7f020008;
+        public static final int logo=0x7f020006;
+        public static final int pauseicon=0x7f020007;
+        public static final int playicon=0x7f020008;
+        public static final int stopicon=0x7f020009;
     }
     public static final class id {
-        public static final int currentpositiontextplaymusicactivity=0x7f07000b;
-        public static final int durationtextplaymusicactivity=0x7f07000c;
-        public static final int maintext=0x7f070004;
-        public static final int music_selection_item_arrow_textview=0x7f070003;
-        public static final int music_selection_item_layout=0x7f070001;
-        public static final int music_selection_item_title_textview=0x7f070002;
-        public static final int music_selection_listView=0x7f070000;
-        public static final int musicselectionmusicactivity=0x7f070009;
-        public static final int nextbuttonplaymusicactivity=0x7f070008;
-        public static final int pausebuttonplaymusicactivity=0x7f070007;
-        public static final int playbuttonplaymusicactivity=0x7f070006;
-        public static final int previousbuttonplaymusicactivity=0x7f070005;
-        public static final int seekbarplaymusicactivity=0x7f07000a;
+        public static final int currentpositiontextplaymusicactivity=0x7f08000d;
+        public static final int durationtextplaymusicactivity=0x7f08000e;
+        public static final int maintext=0x7f080006;
+        public static final int music_selection_current_folder_label_textview=0x7f080003;
+        public static final int music_selection_current_folder_textview=0x7f080004;
+        public static final int music_selection_go_to_parent_folder_imagebutton=0x7f080000;
+        public static final int music_selection_go_to_play_music_imagebutton=0x7f080001;
+        public static final int music_selection_item_arrow_textview=0x7f080011;
+        public static final int music_selection_item_layout=0x7f08000f;
+        public static final int music_selection_item_title_textview=0x7f080010;
+        public static final int music_selection_listView=0x7f080005;
+        public static final int music_selection_pressbar=0x7f080002;
+        public static final int musicselectionmusicactivity=0x7f08000b;
+        public static final int nextbuttonplaymusicactivity=0x7f08000a;
+        public static final int pausebuttonplaymusicactivity=0x7f080009;
+        public static final int playbuttonplaymusicactivity=0x7f080008;
+        public static final int previousbuttonplaymusicactivity=0x7f080007;
+        public static final int seekbarplaymusicactivity=0x7f08000c;
     }
     public static final class layout {
-        public static final int music_selection=0x7f030000;
-        public static final int music_selection_item=0x7f030001;
-        public static final int playmusic=0x7f030002;
+        public static final int activity_music_selection=0x7f030000;
+        public static final int activity_play_music=0x7f030001;
+        public static final int music_selection_item=0x7f030002;
     }
     public static final class raw {
         public static final int akscreen=0x7f040000;
@@ -63,25 +69,40 @@ public final class R {
     public static final class string {
         public static final int app_name=0x7f060001;
         public static final int author=0x7f06000a;
+        public static final int description_image_music_selection_go_to_play_music_activity=0x7f06000c;
+        /**  Descriptions 
+         */
+        public static final int description_image_music_selection_parent_folder=0x7f06000b;
         public static final int destroyedService=0x7f060007;
         public static final int empty=0x7f060009;
         public static final int hello=0x7f060000;
         public static final int local_service_name=0x7f060002;
+        public static final int music_selection_current_folder=0x7f06000e;
         /**  Music Selection Activity 
          */
-        public static final int music_selection_item_arrow=0x7f06000b;
+        public static final int music_selection_item_arrow=0x7f06000d;
         public static final int notificationTitle=0x7f060008;
         /**  Play Music Activity 
          */
-        public static final int play_music_by=0x7f06000c;
-        public static final int play_music_format=0x7f06000d;
-        public static final int play_music_untitled_song=0x7f06000e;
+        public static final int play_music_by=0x7f06000f;
+        public static final int play_music_format=0x7f060010;
+        public static final int play_music_untitled_song=0x7f060011;
         public static final int running=0x7f060004;
         /**  Image descriptions 
          */
-        public static final int selection_music_item_imageview_description=0x7f06000f;
+        public static final int selection_music_item_imageview_description=0x7f060012;
         public static final int started=0x7f060003;
         public static final int stopped=0x7f060005;
         public static final int unknown=0x7f060006;
+    }
+    public static final class style {
+        /**  Style of the Music Selection Activity, showing a logo in the background. 
+         */
+        public static final int music_selection=0x7f070000;
+        /**  Style of the ListView of the Music Selection Activity. 
+ It has a transparent background. The cache color hint has to be set to transparent 
+ so that the image can be seen even when scrolling. 
+         */
+        public static final int music_selection_listview=0x7f070001;
     }
 }

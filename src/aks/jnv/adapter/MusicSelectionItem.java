@@ -29,7 +29,8 @@ public class MusicSelectionItem implements Comparable<MusicSelectionItem> {
 	public MusicSelectionItem(String path, boolean isFolder) {
 		mPath = path;
 		mIsFolder = isFolder;
-		mShortName = FileUtils.getMusicShortName(path, true);
+		// If the file is a folder, we don't remove its "extension".
+		mShortName = FileUtils.getMusicShortName(path, isFolder);
 		mShortNameLowerCase = mShortName.toLowerCase();
 	}
 	
@@ -66,7 +67,9 @@ public class MusicSelectionItem implements Comparable<MusicSelectionItem> {
 		// If the current element is a folder and not the other one, the current one comes before (folders are before music items).
 		if (mIsFolder && !another.mIsFolder) {
 			return -1;
-		}
+		} else if (!mIsFolder && another.mIsFolder) {
+			return 1;
+		}  
 
 		// The comparison is based on the short name in lower case.
 		return mShortNameLowerCase.compareTo(another.mShortNameLowerCase);

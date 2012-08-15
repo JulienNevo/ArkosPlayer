@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Layout for the Music Selection Activity. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    >
+    
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="fill_parent"
+    	android:layout_height="50dp"
+    	android:orientation="horizontal"
+    	android:background="@android:color/black" >
+        
+        <!-- Buttons on either side -->
+        <ImageButton
+            android:id="@+id/music_selection_go_to_parent_folder_imagebutton"
+            android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:layout_alignParentLeft="true"
+            android:contentDescription="@string/description_image_music_selection_parent_folder"
+    		android:src="@android:drawable/ic_input_delete"
+    		android:onClick="onGoToParentFolderButtonClick" />
+        <ImageButton
+            android:id="@+id/music_selection_go_to_play_music_imagebutton"
+            android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:layout_alignParentRight="true"
+            android:contentDescription="@string/description_image_music_selection_go_to_play_music_activity"
+    		android:src="@android:drawable/ic_media_play"
+    		android:onClick="onGoToPlayMusicActivityButtonClick" />
+        
+        <!-- A ProgressBar, which may be rendered invisible. -->
+        <ProgressBar
+            android:id="@+id/music_selection_pressbar"
+            android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:layout_toRightOf="@id/music_selection_go_to_parent_folder_imagebutton"
+            />
+        
+        <!-- Two TextViews to show the current folder. -->
+        <TextView
+            android:id="@+id/music_selection_current_folder_label_textview"
+            android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:layout_alignParentTop="true"
+    		android:layout_toLeftOf="@id/music_selection_go_to_play_music_imagebutton"
+    		android:layout_toRightOf="@id/music_selection_go_to_parent_folder_imagebutton"
+    		android:gravity="center"
+    		android:text="@string/music_selection_current_folder" />
+        <TextView
+            android:id="@+id/music_selection_current_folder_textview"
+            android:layout_width="wrap_content"
+    		android:layout_height="wrap_content"
+    		android:layout_alignParentBottom="true"
+    		android:layout_toLeftOf="@id/music_selection_go_to_play_music_imagebutton"
+    		android:layout_toRightOf="@id/music_selection_go_to_parent_folder_imagebutton"
+    		android:gravity="center"
+    		android:ellipsize="start"
+    		android:singleLine="true" />
+    </RelativeLayout>
+    
+    <ListView
+        android:id="@+id/music_selection_listView"
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        style="@style/music_selection_listview" />
+
+</LinearLayout>

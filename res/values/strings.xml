@@ -12,8 +12,13 @@
     <string name="empty">(empty)</string>
     <string name="author">Author</string>
     
+    <!-- Descriptions -->
+    <string name="description_image_music_selection_parent_folder">"Aller au répertoire parent"</string>
+    <string name="description_image_music_selection_go_to_play_music_activity">"Aller au lecteur de musique"</string>
+    
     <!-- Music Selection Activity -->
     <string name="music_selection_item_arrow">">"</string>
+    <string name="music_selection_current_folder">"Current folder:"</string>
     
     <!-- Play Music Activity -->
     <string name="play_music_by">"by:"</string>

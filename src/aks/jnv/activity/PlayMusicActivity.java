@@ -45,6 +45,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -61,7 +62,6 @@ import android.widget.TextView;
  * 						  http://www.vogella.de/articles/AndroidServices/article.html
  * 						  <!-- android:process=":my_process" -->
  * 						  --> No, probably just need to create a worker Thread and that's all.
- * - SongInformation and Song shared the same information! Redundancy!
  * - If the last frame of an YM isn't correctly encoded, prevent the crash (Molusk song).
  * - Show digidrums in the EQ.
  * 
@@ -70,11 +70,10 @@ import android.widget.TextView;
  * @author Julien Névo
  * 
  */
-//public class PlayMusicActivity extends ServiceActivity implements IAccelerometerListener {
 public class PlayMusicActivity extends Activity implements IAccelerometerListener {
 
 	/** The debug tag of this class. */
-	private static final String DEBUG_TAG = PlayMusicActivity.class.getSimpleName();
+	//private static final String DEBUG_TAG = PlayMusicActivity.class.getSimpleName();
 	
 	/** Helper class to broadcast only within the application. */
 	private static LocalBroadcastManager mLocalBroadcastManager;
@@ -125,7 +124,11 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.playmusic);
+		
+		// Removed the title bar.
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+		setContentView(R.layout.activity_play_music);
 		
 		// Gets the possible song to play from the calling Activity.
 		String songPath = getIntent().getStringExtra(EXTRA_SONG_NAME);
