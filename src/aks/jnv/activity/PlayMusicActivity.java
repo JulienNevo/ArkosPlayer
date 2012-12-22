@@ -44,6 +44,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -56,6 +57,7 @@ import android.widget.TextView;
  * Activity used to see the music being played, information about it, command button, and a seek bar.
  * 
  * TODO :
+ * - Choosing a second song doesn't play it.
  * - Handle unknown format song (next song if possible ?).
  * - Cybern2 doesn't crash, but strange looping ending. Cybern3 (YM6) is good though.
  * - Service stuttering : Maybe a "process" in the xml would be enough ?
@@ -73,7 +75,7 @@ import android.widget.TextView;
 public class PlayMusicActivity extends Activity implements IAccelerometerListener {
 
 	/** The debug tag of this class. */
-	//private static final String DEBUG_TAG = PlayMusicActivity.class.getSimpleName();
+	private static final String LOG_TAG = PlayMusicActivity.class.getSimpleName();
 	
 	/** Helper class to broadcast only within the application. */
 	private static LocalBroadcastManager mLocalBroadcastManager;
@@ -85,7 +87,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	//private IMusicController musicController = MusicController.getInstance();
 	
 	/** The tag used to give this Activity the name of the song to play. */
-	public static final String EXTRA_SONG_NAME = "SONG_NAME";
+	public static final String EXTRA_SONG_PATH = "songPath";
 
 	/** Stores the song duration in seconds. */
 	private int mSongDurationInSeconds;
@@ -125,22 +127,15 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		Log.e(LOG_TAG, "onCreate");
+		
 		// Removed the title bar.
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(R.layout.activity_play_music);
 		
 		// Gets the possible song to play from the calling Activity.
-		String songPath = getIntent().getStringExtra(EXTRA_SONG_NAME);
-		if (songPath != null) {
-			File musicFile = new File(songPath);
-			if (musicFile != null) {
-				mSong = musicFile;
-			}
-		}
-		
-		
-		
+		setNewSongFromIntent();
 		
 		// FIXME Remove the GLView because it's really CPU consuming!
 		//glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
@@ -171,25 +166,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			
 			@Override
 			public void onClick(View v) {
-				
-				showPlayOrPauseButton(false);
-				
-				if (mSong != null) {
-					Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
-					intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
-					intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
-					startService(intent);
-				}
-				
-//				if (isBound) {
-//					//Log.e(DEBUG_TAG, "PlayMusicActivity::onClick Start : BOUND");
-//					audioService.setSong(mSong);
-//					audioService.play();
-//					
-//					// Tells the equalizer where to get its information.
-//					// FIXME Remove the GLView because it's really CPU consuming!
-//					//glSurfaceView.setSongReader(audioService.getSongReader());
-//				}
+				playOrPause();
 			}
 		});
 		
@@ -265,12 +242,66 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		});
 		
 		// Plays the song.
-		mPlayButton.performClick();
+		//mPlayButton.performClick();
+		//playOrPause();
+	}
+	
+	/**
+	 * Gets the song path and name from the intent.
+	 */
+	private void setNewSongFromIntent() {
+		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
+		if (songPath != null) {
+			File musicFile = new File(songPath);
+			if (musicFile != null) {
+				mSong = musicFile;
+			}
+		}
+	}
+	
+	/**
+	 * The Play/Pause button has been clicked.
+	 */
+	private void playOrPause() {
+		showPlayOrPauseButton(false);
+		
+		if (mSong != null) {
+			Log.e(LOG_TAG, "Song played = " + mSong.getName());
+			Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+			intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
+			intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
+			startService(intent);
+		}
+		
+//		if (isBound) {
+//			//Log.e(DEBUG_TAG, "PlayMusicActivity::onClick Start : BOUND");
+//			audioService.setSong(mSong);
+//			audioService.play();
+//			
+//			// Tells the equalizer where to get its information.
+//			// FIXME Remove the GLView because it's really CPU consuming!
+//			//glSurfaceView.setSongReader(audioService.getSongReader());
+//		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		// This is needed because this Activity is declared as SingleTop, so when one of the MusicSelectionActivity starts it again with a new music,
+		// onCreate is not called, and onResume is called but the Intent is the old one. This method allows the new Intent to be used instead of the
+		// old one.
+		setIntent(intent);
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		Log.e(LOG_TAG, "onResume");
+		setNewSongFromIntent();
+		
+		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
+		Log.e(LOG_TAG, "Song played = " + songPath);
 		
         // Listens to the Accelerometer.
 		AccelerometerManager.setContext(this);
@@ -323,6 +354,9 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		
 		
 		mLocalBroadcastManager.registerReceiver(mAudioBroadcastReceiver, filter);
+		
+		// Plays the song.
+		playOrPause();
 	}
 	
 	@Override

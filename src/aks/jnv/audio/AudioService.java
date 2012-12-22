@@ -451,6 +451,8 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	// IAudioService implementation methods
 	// ------------------------------------
 	
+	// FIXME Most of these methods are not used!! Is the interface really useful?
+	
 	@Override
 	public void stop() {
 		stopSong();

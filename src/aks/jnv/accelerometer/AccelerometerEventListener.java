@@ -81,9 +81,9 @@ public class AccelerometerEventListener implements SensorEventListener {
 	}
 
 	/**
-	 * Shift "to the left" the values of the given array, and set the last element with the given value.
-	 * @param values the array to shift.
-	 * @param newValue the value to set.
+	 * Shifts "to the left" the values of the given array, and set the last element with the given value.
+	 * @param values The array to shift.
+	 * @param newValue The value to set.
 	 */
 	private static void shiftPreviousValuesArrayAndSetNewValue(float[] values, float newValue) {
 		int length = values.length;
@@ -100,10 +100,10 @@ public class AccelerometerEventListener implements SensorEventListener {
 
 	/**
 	 * Returns the average of the values of the given array.
-	 * @param values the array.
+	 * @param values The array.
 	 * @return the average of the values of the given array.
 	 */
-	private float getAverage(float[] values) {
+	private static float getAverage(float[] values) {
 		float result = 0;
 		int length = values.length;
 		for (int i = 0; i < length; i++) {

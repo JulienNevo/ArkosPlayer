@@ -44,6 +44,7 @@ import aks.jnv.util.PreferenceUtils;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -62,11 +63,11 @@ import android.widget.TextView;
 public class MusicSelectionActivity extends Activity implements IFindMusicTaskCallback, OnItemClickListener {
 
 	/** The debug tag of this class. */
-	//private static final String DEBUG_TAG = MusicSelectionActivity.class.getSimpleName();
+	private static final String LOG_TAG = MusicSelectionActivity.class.getSimpleName();
 
 	/** The tag used to give this Activity the name of the folder from where to start the search. */
-	private static final String EXTRA_MUSIC_PATH = "MUSIC_PATH";
-
+	public static final String EXTRA_MUSIC_PATH = "musicPath";
+	
 	/** The Task that finds music. */
 	private FindMusicTask mTask;
 	
@@ -238,13 +239,14 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	
 	/**
 	 * Goes to the Play Music Activity.
-	 * @param songName The song to play, or null if none should be played.
+	 * @param songPath The path of the song to play, or null if none should be played.
 	 */
-	private void goToPlayMusicActivity(String songName) {
+	private void goToPlayMusicActivity(String songPath) {
 		Intent intent = new Intent(this, PlayMusicActivity.class);
+		Log.e(LOG_TAG, "Song to play: " + songPath);
 		// Don't indicate the song name if there isn't any.
-		if (songName != null) {
-			intent.putExtra(PlayMusicActivity.EXTRA_SONG_NAME, songName);
+		if (songPath != null) {
+			intent.putExtra(PlayMusicActivity.EXTRA_SONG_PATH, songPath);
 		}
 		startActivity(intent);
 	}

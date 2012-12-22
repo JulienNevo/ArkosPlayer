@@ -48,6 +48,7 @@ public class GLBuffersUtils {
 	 * @return a FloatBuffer containing the Vertex buffer.
 	 */
 	public static FloatBuffer getVertexBuffer(float[] vertices) {
+		// FIXME 3 or 4???
 		ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4); // Each vertex has 3 coordinates.
 		vbb.order(ByteOrder.nativeOrder());
 		FloatBuffer vertexBuffer = vbb.asFloatBuffer();
