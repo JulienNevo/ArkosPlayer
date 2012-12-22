@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Style of the Music Selection Activity, showing a logo in the background. -->
+    <style name="music_selection">
+        <item name="android:windowBackground">@drawable/logo</item>
+    </style>
+    
+    <!-- Style of the ListView of the Music Selection Activity. -->
+    <!-- It has a transparent background. The cache color hint has to be set to transparent -->
+    <!-- so that the image can be seen even when scrolling. -->
+    <style name="music_selection_listview">
+        <item name="android:background">#c0000000</item>
+        <item name="android:cacheColorHint">@android:color/transparent</item>
+    </style>
+ </resources>
