@@ -53,7 +53,7 @@ public class FileUtils {
 	private static final String DEBUG_TAG = "FileUtils";
 	
  	/** Folder where is the music. */
-	public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes";
+	public static final String MUSIC_FOLDER_ROOT = "/mnt/sdcard/Music/YM/Tunes";
 	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Follin.Bros/";
 	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Whittacker.David/";
 

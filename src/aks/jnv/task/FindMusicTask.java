@@ -115,6 +115,11 @@ public class FindMusicTask extends AsyncTask<Void, MusicSelectionItem, Void> {
 		// Scans all of them. They may be directories.
 		if (files != null) {
 			for (File file : files) {
+				// Stops the task if it was cancelled.
+				if (isCancelled()) {
+					return;
+				}
+				
 				if (file.isDirectory()) {
 					// It's a directory. Notifies it, but don't explore it.
 					publishProgress(new MusicSelectionItem(file.getAbsolutePath(), true));

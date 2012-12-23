@@ -363,7 +363,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	 * Stops the song.
 	 */
 	public void stopSong() {
-		mAudioRenderer.stopSound();
+		if (mAudioRenderer != null) {
+			mAudioRenderer.stopSound();
+		}
 		mAudioRenderer = null;
 		// Allows the Service to be killed if memory is needed.
 		stopForeground(true);
@@ -470,7 +472,10 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 
 	@Override
 	public void seek(int secondToSeek) {
-		mAudioRenderer.seek(secondToSeek);
+		// Makes the seek. If no music is loaded, don't do anything.
+		if (mAudioRenderer != null) {
+			mAudioRenderer.seek(secondToSeek);
+		}
 	}
 
 	@Override

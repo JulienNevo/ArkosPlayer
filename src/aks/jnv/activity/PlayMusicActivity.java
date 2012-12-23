@@ -44,10 +44,9 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -57,7 +56,11 @@ import android.widget.TextView;
  * Activity used to see the music being played, information about it, command button, and a seek bar.
  * 
  * TODO :
- * - Choosing a second song doesn't play it.
+ * - One of the song doesn't play digidrums?
+ * 
+ * - When leaving (back) the player, and going back to it thanks to the notification icon,
+ * 	 the UI is empty.
+ * 
  * - Handle unknown format song (next song if possible ?).
  * - Cybern2 doesn't crash, but strange looping ending. Cybern3 (YM6) is good though.
  * - Service stuttering : Maybe a "process" in the xml would be enough ?
@@ -118,7 +121,8 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	/** BroadcastReceiver to get Intents from the Audio Service. */
 	private BroadcastReceiver mAudioBroadcastReceiver;
 
-
+	/** Indicates whether the user is being sliding the slider. */
+	private boolean mIsUserSliding;
 	
 	// FIXME Remove the GLView because it's really CPU consuming!
 	//private EqualizerGLSurfaceView glSurfaceView;
@@ -127,7 +131,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Log.e(LOG_TAG, "onCreate");
+		//Log.e(LOG_TAG, "onCreate");
 		
 		// Removed the title bar.
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -175,6 +179,12 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			
 			@Override
 			public void onClick(View v) {
+				
+				// If no song is being played, directly go to the MusicSelection Activity.
+				if (mSong == null) {
+					goToMusicSelectionActivity();
+				}
+				
 				showPlayOrPauseButton(true);
 				
 				Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
@@ -205,6 +215,8 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
+				mIsUserSliding = false;
+				
 				// Asks the Service to seek a new position.
 				int seekPosition = seekBar.getProgress();
 				
@@ -219,6 +231,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
+				mIsUserSliding = true;
 			}
 			
 			@Override
@@ -236,8 +249,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			@Override
 			public void onClick(View v) {
 				// Opens the Music Selection Activity.
-				Intent intent = new Intent(PlayMusicActivity.this, MusicSelectionActivity.class);
-				startActivity(intent);
+				goToMusicSelectionActivity();
 			}
 		});
 		
@@ -246,44 +258,6 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		//playOrPause();
 	}
 	
-	/**
-	 * Gets the song path and name from the intent.
-	 */
-	private void setNewSongFromIntent() {
-		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
-		if (songPath != null) {
-			File musicFile = new File(songPath);
-			if (musicFile != null) {
-				mSong = musicFile;
-			}
-		}
-	}
-	
-	/**
-	 * The Play/Pause button has been clicked.
-	 */
-	private void playOrPause() {
-		showPlayOrPauseButton(false);
-		
-		if (mSong != null) {
-			Log.e(LOG_TAG, "Song played = " + mSong.getName());
-			Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
-			intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
-			intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
-			startService(intent);
-		}
-		
-//		if (isBound) {
-//			//Log.e(DEBUG_TAG, "PlayMusicActivity::onClick Start : BOUND");
-//			audioService.setSong(mSong);
-//			audioService.play();
-//			
-//			// Tells the equalizer where to get its information.
-//			// FIXME Remove the GLView because it's really CPU consuming!
-//			//glSurfaceView.setSongReader(audioService.getSongReader());
-//		}
-	}
-
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
@@ -297,11 +271,11 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	protected void onResume() {
 		super.onResume();
 		
-		Log.e(LOG_TAG, "onResume");
+		//Log.e(LOG_TAG, "onResume");
 		setNewSongFromIntent();
 		
 		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
-		Log.e(LOG_TAG, "Song played = " + songPath);
+		//Log.e(LOG_TAG, "Song played = " + songPath);
 		
         // Listens to the Accelerometer.
 		AccelerometerManager.setContext(this);
@@ -387,6 +361,46 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		//FIXME Remove the GLView because it's really CPU consuming!
 		//glSurfaceView.onAccelerationChanged(x, y, z);
 	}
+
+	
+	// --------------------------------------------------------------------
+	// Private methods.
+	// --------------------------------------------------------------------
+	
+	/**
+	 * Gets the song path and name from the intent.
+	 */
+	private void setNewSongFromIntent() {
+		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
+		if (songPath != null) {
+			File musicFile = new File(songPath);
+			if (musicFile != null) {
+				mSong = musicFile;
+			}
+		}
+	}
+	
+	/**
+	 * The Play/Pause button has been clicked.
+	 */
+	private void playOrPause() {
+		showPlayOrPauseButton(false);
+		
+		//Log.e(LOG_TAG, "Is mSong null? " + (mSong == null));
+				
+		if (mSong != null) {
+			//Log.e(LOG_TAG, "Song played = " + mSong.getName());
+			Intent intent = new Intent(PlayMusicActivity.this, AudioService.class);
+			intent.setAction(AudioService.PLAY_SONG_RECEIVED_ACTION);
+			intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
+			startService(intent);
+		}
+		
+//			// Tells the equalizer where to get its information.
+//			// FIXME Remove the GLView because it's really CPU consuming!
+//			//glSurfaceView.setSongReader(audioService.getSongReader());
+//		}
+	}
 	
 	/**
 	 * Shows the Play or Pause button.
@@ -399,17 +413,19 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	
 	/**
 	 * Updates the song information.
-	 * @param musicName The name of the music.
-	 * @param author The author.
-	 * @param comments The comments.
-	 * @param format The format.
-	 * @param duration The duration in seconds.
+	 * @param musicName The name of the music. May be null.
+	 * @param author The author. May be null.
+	 * @param comments The comments. May be null.
+	 * @param format The format. May be null.
+	 * @param duration The duration in seconds. May be 0.
 	 */
 	private void updateSongInformation(String musicName, String author, String comments, String format, int duration) {
 		mSongDurationInSeconds = duration;
 		mSeekBar.setMax(duration > 0 ? duration - 1 : 0);
 		mSeekBar.setProgress(0);
-		mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(mSongDurationInSeconds));
+		updatePositionTextViews(0, duration);
+		//mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(mSongDurationInSeconds));
+		
 		
 		// Builds the main text.
 		StringBuffer sb = new StringBuffer();
@@ -434,12 +450,15 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	}
 	
 	/**
-	 * Updates the seek position visually.
+	 * Updates the seek position visually. If the user is already seeking, we don't show anything.
 	 * @param seekPosition The seek position, in seconds.
 	 */
 	private void updateSongSeekPosition(int seekPosition) {
-		mSeekBar.setProgress(seekPosition);
-		updatePositionTextViews(seekPosition, mSongDurationInSeconds);
+		// Don't update the position if the user is already seeking.
+		if (!mIsUserSliding) {
+			mSeekBar.setProgress(seekPosition);
+			updatePositionTextViews(seekPosition, mSongDurationInSeconds);
+		}
 	}
 	
 
@@ -497,9 +516,11 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	 * bad file has been loaded.
 	 */
 	private void setFieldsToUnkown() {
-		updatePositionTextViews(0, 0);
-		mSeekBar.setMax(0);
-		mSeekBar.setProgress(0);
+		//updatePositionTextViews(0, 0);
+		//mSeekBar.setMax(0);
+		//mSeekBar.setProgress(0);
+		
+		updateSongInformation(getString(R.string.play_music_no_music_loaded), null, null, null, 0);
 	}
 	
 	/**
@@ -514,6 +535,14 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			remainingDuration = 0;
 		}
 		mRemainingDurationInSecondsTextView.setText("-" + convertDurationToMinutes(remainingDuration));
+	}
+
+	/**
+	 * Opens the Music Selection Activity.
+	 */
+	private void goToMusicSelectionActivity() {
+		Intent intent = new Intent(PlayMusicActivity.this, MusicSelectionActivity.class);
+		startActivity(intent);
 	}
 
 	/**

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
-    <string name="hello">Hello World, FirstActivity!</string>
     <string name="app_name">Arkos Player</string>
     <string name="local_service_name">MyLocalService</string>
     <string name="started">Service started.</string>
@@ -13,8 +12,8 @@
     <string name="author">Author</string>
     
     <!-- Descriptions -->
-    <string name="description_image_music_selection_parent_folder">"Aller au répertoire parent"</string>
-    <string name="description_image_music_selection_go_to_play_music_activity">"Aller au lecteur de musique"</string>
+    <string name="description_image_music_selection_parent_folder">"Go to parent folder"</string>
+    <string name="description_image_music_selection_go_to_play_music_activity">"Go to music player"</string>
     
     <!-- Music Selection Activity -->
     <string name="music_selection_item_arrow">">"</string>
@@ -24,6 +23,9 @@
     <string name="play_music_by">"by:"</string>
     <string name="play_music_format">"Format :"</string>
     <string name="play_music_untitled_song">"Untitled song"</string>
+    <string name="play_music_no_music_loaded">"No song is currently loaded."</string>
+    
     <!-- Image descriptions -->
     <string name="selection_music_item_imageview_description">Selection item image</string>
+    
 </resources>
