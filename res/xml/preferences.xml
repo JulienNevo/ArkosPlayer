@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- XML defining the Preferences shown in the PreferencesActivity. -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <ListPreference
+        android:title="@string/preferences_equalizer"
+        android:key="@string/preferences_key_equalizer"
+        android:defaultValue="@string/preferences_equalizer_type_3d"
+        android:entries="@array/equalizerTypes"
+        android:entryValues="@array/equalizerTypes" />
+    
+    <EditTextPreference
+        android:title="@string/preferences_music_path"
+        android:key="@string/preferences_key_music_path"
+        android:defaultValue="@string/music_default_path"
+        android:summary="@string/music_default_path" />
+    
+</PreferenceScreen>

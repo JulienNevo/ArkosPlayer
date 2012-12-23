@@ -1,8 +1,10 @@
 package aks.jnv.util;
 
+import aks.jnv.R;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.preference.PreferenceManager;
 
 /**
  * Helper class that stores and retrieves the data stored in the Shared Preferences.
@@ -12,33 +14,51 @@ import android.content.SharedPreferences.Editor;
  */
 public class PreferenceUtils {
 
-	/** File name where the preferences are stored. */
-	private static final String PREFERENCE_FILE = "PreferenceFile";
 	
-	/** Key to the current music folder. */
-	private static final String KEY_CURRENT_MUSIC_FOLDER = "CurrentMusicFolder";
+	// -----------------------------------------------------------------
+	// Public methods.
+	// -----------------------------------------------------------------
 	
 	/**
-	 * Stores the current music folder.
+	 * Stores the current music folder <b>from the external storage root</b>.
 	 * @param musicFolder The current music folder.
 	 */
 	public static void setCurrentMusicFolder(Context context, String musicFolder) {
-		storeStringValue(context, musicFolder, KEY_CURRENT_MUSIC_FOLDER);
+		storeStringValue(context, musicFolder, context.getString(R.string.preferences_key_music_path));
 	}
 
 	/**
-	 * Returns the possibly stored music folder, or null if none was stored.
+	 * Returns the possibly stored music folder <b>from the external storage root</b>, or null if none was stored.
 	 * @param context A Context.
 	 * @return The possibly stored music folder, or null if none was stored.
 	 */
 	public static String getCurrentMusicFolder(Context context) {
-		return restoreStringValue(context, KEY_CURRENT_MUSIC_FOLDER, null);
+		return restoreStringValue(context, context.getString(R.string.preferences_key_music_path), null);
 	}
 	
+	/**
+	 * Returns the current equalizer type.
+	 * @param context A Context.
+	 * @return The type of the equalizer.
+	 */
+	public static EqualizerType getEqualizerType(Context context) {
+		String typeString = restoreStringValue(context, context.getString(R.string.preferences_key_equalizer), context.getString(R.string.preferences_equalizer_type_none));
+		return EqualizerType.getEqualizerFromString(context, typeString);
+	}
 	
-	// ---------------
-	// Private methods
-	// ---------------
+	/**
+	 * Indicates whether the equalizer is used.
+	 * @param context A Context.
+	 * @return
+	 */
+	public static boolean isEqualizerUsed(Context context) {
+		return getEqualizerType(context) != EqualizerType.EQUALIZER_NONE;
+	}
+
+	
+	// -----------------------------------------------------------------
+	// Private methods.
+	// -----------------------------------------------------------------
 
 	/**
 	 * Stores the given String value inside the given key of the Shared Preferences file of the application.
@@ -47,7 +67,7 @@ public class PreferenceUtils {
 	 * @param key The key.
 	 */
 	private static void storeStringValue(Context context, String value, String key) {
-		SharedPreferences sharedPreferences = context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		Editor editor = sharedPreferences.edit();
 		editor.putString(key, value);
 		editor.commit();
@@ -61,8 +81,7 @@ public class PreferenceUtils {
 	 * @return The value, or the default value if no key was stored.
 	 */
 	private static String restoreStringValue(Context context, String key, String defaultValue) {
-		SharedPreferences sharedPreferences = context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 		return sharedPreferences.getString(key, defaultValue);
 	}
-	
 }

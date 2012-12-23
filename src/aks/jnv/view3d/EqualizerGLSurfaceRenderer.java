@@ -33,9 +33,8 @@ package aks.jnv.view3d;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import aks.jnv.reader.ISongReader;
-import android.opengl.GLU;
 import android.opengl.GLSurfaceView.Renderer;
+import android.opengl.GLU;
 
 /**
  * The Renderer used to display the equalizer of the played song.
@@ -45,8 +44,13 @@ import android.opengl.GLSurfaceView.Renderer;
  */
 public class EqualizerGLSurfaceRenderer implements Renderer {
 
-	/** Count of the Equalizer bar. 3 plus one for the noise. */
-	private static final int EQUALIZER_BAR_COUNT = 4;
+	/** The Log tag of this class. */
+	//private static final String LOG_TAG = EqualizerGLSurfaceRenderer.class.getSimpleName();
+	
+	/** Count of the channels. */
+	private static final int CHANNEL_COUNT = 3;
+	/** Count of the Equalizer bar. Channel count plus one for the noise. */
+	private static final int EQUALIZER_BAR_COUNT = CHANNEL_COUNT + 1;
 	
 	/** The far clipping value. */
 	private static final float FAR_CLIPPING = 100.0f;
@@ -68,7 +72,7 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	private static final float EQUALIZER_BAR_INITIAL_Z = -7;
 	/** The width in X between two equalizer bars. */
 	private static final float EQUALIZER_BAR_X_SEPARATION = EqualizerBarShape.BAR_WIDTH + EqualizerBarShape.BAR_WIDTH * 0.5f;
-	
+
 	/** The view width. */
 	//private int viewPortWidth = 1;
 	/** The view height. */
@@ -81,12 +85,17 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	private IShape3d[] mEqualizerBarShapes;
 	
 	/** Provider of information about the sound produces, in order to display the equalizer. */
-	private ISongReader mSongReader;
+	//private ISongReader mSongReader;
 
 	/** The accelerometer value in X. */
 	private float mAccelerometerValueX;
 	/** The accelerometer value in Y. */
 	private float mAccelerometerValueY;
+	
+	/** The volume of the channels. */
+	private int[] mVolumes = new int[CHANNEL_COUNT];
+	/** The noise value. */
+	private int mNoise;
 	
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -104,13 +113,13 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 		gl.glLoadIdentity();
 	}
 	
-	/**
-	 * Sets the SongReader in order to get the information for the equalizer.
-	 * @param songReader the SongReader.
-	 */
-	public void setSongReader(ISongReader songReader) {
-		mSongReader = songReader;
-	}
+//	/**
+//	 * Sets the SongReader in order to get the information for the equalizer.
+//	 * @param songReader the SongReader.
+//	 */
+//	public void setSongReader(ISongReader songReader) {
+//		mSongReader = songReader;
+//	}
 	
 	/**
 	 * Initializes the shapes. Must be done once.
@@ -176,18 +185,14 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 		
 		
 		// Gets the information for the equalizers.
-		if (mSongReader != null) {
-			// Reads the volume.
-			for (int channel = 1; channel <= 3; channel++) {
-				int volume = mSongReader.getVolumeChannel(channel);
-				((EqualizerBarShape)mEqualizerBarShapes[channel - 1]).setValue(volume);
-			}
-			
-			// Reads the noise for the last bar. If no channel use the noise, we set its value to 0.
-			boolean isNoiseUsed = mSongReader.getNoiseChannels() != 0;
-			int noise = isNoiseUsed ? mSongReader.getNoiseValue() : 0;
-			((EqualizerBarShape)mEqualizerBarShapes[mEqualizerBarShapes.length - 1]).setValue(noise);
+		// Reads the volume.
+		for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
+			int volume = mVolumes[channel];
+			((EqualizerBarShape)mEqualizerBarShapes[channel]).setValue(volume);
 		}
+		
+		// Reads the noise for the last bar. If no channel use the noise, we set its value to 0.
+		((EqualizerBarShape)mEqualizerBarShapes[mEqualizerBarShapes.length - 1]).setValue(mNoise);
 		
 		// Displays the Equalizer Bars.
 		for (IShape3d shape : mEqualizerBarShapes) {
@@ -204,6 +209,20 @@ public class EqualizerGLSurfaceRenderer implements Renderer {
 	public void setAccelerometerValue(float x, float y, float z) {
 		mAccelerometerValueX = x;
 		mAccelerometerValueY = y;
+	}
+
+	/**
+	 * Sets the equalizer values.
+	 * @param channel1Volume The volume for the channel 1.
+	 * @param channel2Volume The volume for the channel 2.
+	 * @param channel3Volume The volume for the channel 3.
+	 * @param noise The noise.
+	 */
+	public void setEqualizerValues(int channel1Volume, int channel2Volume, int channel3Volume, int noise) {
+		mVolumes[0] = channel1Volume;
+		mVolumes[1] = channel2Volume;
+		mVolumes[2] = channel3Volume;
+		mNoise = noise;
 	}
 
 

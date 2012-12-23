@@ -36,7 +36,8 @@ import aks.jnv.R;
 import aks.jnv.accelerometer.AccelerometerManager;
 import aks.jnv.accelerometer.IAccelerometerListener;
 import aks.jnv.audio.AudioService;
-import android.app.Activity;
+import aks.jnv.util.PreferenceUtils;
+import aks.jnv.view3d.EqualizerGLSurfaceView;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -58,6 +59,8 @@ import android.widget.TextView;
  * TODO :
  * - One of the song doesn't play digidrums?
  * 
+ * - Finish the preferences.
+ * - Pause acts as a stop.
  * - When leaving (back) the player, and going back to it thanks to the notification icon,
  * 	 the UI is empty.
  * 
@@ -70,15 +73,16 @@ import android.widget.TextView;
  * - If the last frame of an YM isn't correctly encoded, prevent the crash (Molusk song).
  * - Show digidrums in the EQ.
  * 
- * - Make a fade in/out options (before/after the song has looped).
+ * - Make a 2D equalizer.
+ * - Make a fade out option (after the song has looped).
  * 
  * @author Julien Névo
  * 
  */
-public class PlayMusicActivity extends Activity implements IAccelerometerListener {
+public class PlayMusicActivity extends BaseActivity implements IAccelerometerListener {
 
 	/** The debug tag of this class. */
-	private static final String LOG_TAG = PlayMusicActivity.class.getSimpleName();
+	//private static final String LOG_TAG = PlayMusicActivity.class.getSimpleName();
 	
 	/** Helper class to broadcast only within the application. */
 	private static LocalBroadcastManager mLocalBroadcastManager;
@@ -124,8 +128,11 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	/** Indicates whether the user is being sliding the slider. */
 	private boolean mIsUserSliding;
 	
-	// FIXME Remove the GLView because it's really CPU consuming!
-	//private EqualizerGLSurfaceView glSurfaceView;
+	/** The Equalizer GLView. */
+	private EqualizerGLSurfaceView mEqualizerGLView;
+	
+	/** Indicates if the Equalizer is used and visible. */
+	private boolean mIsEqualizerVisible;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -141,23 +148,23 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		// Gets the possible song to play from the calling Activity.
 		setNewSongFromIntent();
 		
-		// FIXME Remove the GLView because it's really CPU consuming!
-		//glSurfaceView = (EqualizerGLSurfaceView)findViewById(R.id.playmusic3dview);
 		
 		// Retrieves the objects of the layout.
-		mMainTextView = (TextView)findViewById(R.id.maintext);
-		mRemainingDurationInSecondsTextView = (TextView)findViewById(R.id.durationtextplaymusicactivity);
-		mCurrentPositionInSecondsTextView = (TextView)findViewById(R.id.currentpositiontextplaymusicactivity);
+		mMainTextView = (TextView)findViewById(R.id.play_music_maintext_textview);
+		mRemainingDurationInSecondsTextView = (TextView)findViewById(R.id.play_music_duration_textview);
+		mCurrentPositionInSecondsTextView = (TextView)findViewById(R.id.play_music_current_position_textview);
 		
-		mPlayButton = (Button)findViewById(R.id.playbuttonplaymusicactivity);
-		mPauseButton = (Button)findViewById(R.id.pausebuttonplaymusicactivity);
+		mPlayButton = (Button)findViewById(R.id.play_music_play_button);
+		mPauseButton = (Button)findViewById(R.id.play_music_pause_button);
 		
-		mNextButton = (Button)findViewById(R.id.nextbuttonplaymusicactivity);
-		mPreviousButton = (Button)findViewById(R.id.previousbuttonplaymusicactivity);
+		mNextButton = (Button)findViewById(R.id.play_music_next_button);
+		mPreviousButton = (Button)findViewById(R.id.play_music_previous_button);
 		
-		mSelectMusic = (Button)findViewById(R.id.musicselectionmusicactivity);
+		mSelectMusic = (Button)findViewById(R.id.play_music_music_selection_button);
 		
-		mSeekBar = (SeekBar)findViewById(R.id.seekbarplaymusicactivity);
+		mSeekBar = (SeekBar)findViewById(R.id.play_music_seekbar);
+		
+		mEqualizerGLView = (EqualizerGLSurfaceView)findViewById(R.id.play_music_equalizer3dview);
 		
 		setFieldsToUnkown();
 		
@@ -274,14 +281,20 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		//Log.e(LOG_TAG, "onResume");
 		setNewSongFromIntent();
 		
+		// Is the equalizer visible?
+		mIsEqualizerVisible = PreferenceUtils.isEqualizerUsed(this);
+		mEqualizerGLView.setVisibility(mIsEqualizerVisible ? View.VISIBLE : View.GONE);
+		
+		
 		String songPath = getIntent().getStringExtra(EXTRA_SONG_PATH);
 		//Log.e(LOG_TAG, "Song played = " + songPath);
 		
-        // Listens to the Accelerometer.
-		AccelerometerManager.setContext(this);
-		
-		if (AccelerometerManager.isAccelerometerPresent()) {
-			AccelerometerManager.startListening(this);
+		if (mIsEqualizerVisible) {
+	        // Listens to the Accelerometer, only if the equalizer is visible, as only it uses it.
+			AccelerometerManager.setContext(this);
+			if (AccelerometerManager.isAccelerometerPresent()) {
+				AccelerometerManager.startListening(this);
+			}
 		}
 		
 		// Registers to the Broadcast Receiver from the AudioService.
@@ -292,6 +305,10 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(AudioService.ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE);
 		filter.addAction(AudioService.ACTION_UPDATE_SONG_SEEK_FROM_SERVICE);
+		// Listens to the Equalizer values only if needed.
+		if (mIsEqualizerVisible) {
+			filter.addAction(AudioService.ACTION_UPDATE_EQUALIZER_VALUES);
+		}
 		
 		// Creates the BroadcastReceiver. It will react to the intents from the Audio Service.
 		mAudioBroadcastReceiver = new BroadcastReceiver() {
@@ -322,6 +339,13 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 							updateSongSeekPosition(newSeek);
 						}
 					});
+				} else if (action.equals(AudioService.ACTION_UPDATE_EQUALIZER_VALUES)) {
+					// The service has notified of new Equalizer values.
+					int volumeChannel1 = intent.getIntExtra(AudioService.ACTION_EXTRA_VOLUME_CHANNEL1, 0);
+					int volumeChannel2 = intent.getIntExtra(AudioService.ACTION_EXTRA_VOLUME_CHANNEL2, 0);
+					int volumeChannel3 = intent.getIntExtra(AudioService.ACTION_EXTRA_VOLUME_CHANNEL3, 0);
+					int noise = intent.getIntExtra(AudioService.ACTION_EXTRA_NOISE, 0);
+					setEqualizerValues(volumeChannel1, volumeChannel2, volumeChannel3, noise);
 				}
 			}
 		};
@@ -358,8 +382,7 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 	
 	@Override
 	public void onAccelerationChanged(float x, float y, float z) {
-		//FIXME Remove the GLView because it's really CPU consuming!
-		//glSurfaceView.onAccelerationChanged(x, y, z);
+		mEqualizerGLView.onAccelerationChanged(x, y, z);
 	}
 
 	
@@ -395,11 +418,6 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 			intent.putExtra(AudioService.EXTRA_SONG_NAME, mSong.getAbsolutePath());
 			startService(intent);
 		}
-		
-//			// Tells the equalizer where to get its information.
-//			// FIXME Remove the GLView because it's really CPU consuming!
-//			//glSurfaceView.setSongReader(audioService.getSongReader());
-//		}
 	}
 	
 	/**
@@ -545,6 +563,22 @@ public class PlayMusicActivity extends Activity implements IAccelerometerListene
 		startActivity(intent);
 	}
 
+	/**
+	 * Sets the equalizer values.
+	 * @param volumeChannel1 The volume for the channel 1.
+	 * @param volumeChannel2 The volume for the channel 2.
+	 * @param volumeChannel3 The volume for the channel 3.
+	 * @param noise The noise.
+	 */
+	private void setEqualizerValues(int volumeChannel1, int volumeChannel2, int volumeChannel3, int noise) {
+		mEqualizerGLView.setEqualizerValues(volumeChannel1, volumeChannel2, volumeChannel3, noise);		
+	}
+
+
+	// -----------------------------------------------------------------------
+	// Static utility methods.
+	// -----------------------------------------------------------------------
+	
 	/**
 	 * Converts seconds to minutes.
 	 * @param duration the duration

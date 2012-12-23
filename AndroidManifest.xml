@@ -34,8 +34,14 @@
         <activity
             android:name=".activity.PlayMusicActivity"
             android:screenOrientation="portrait"
-            android:launchMode="singleTask" >
-        </activity>
+            android:launchMode="singleTask" />
+        
+		<activity
+            android:name=".activity.AboutActivity"
+            android:screenOrientation="portrait" />
+        
+		<activity
+            android:name=".activity.PreferencesActivity" />
 
     </application>
 </manifest>

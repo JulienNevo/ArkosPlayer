@@ -31,6 +31,7 @@
 package aks.jnv.audio;
 
 import java.io.File;
+
 import aks.jnv.R;
 import aks.jnv.activity.PlayMusicActivity;
 import aks.jnv.reader.ISongReader;
@@ -46,7 +47,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
-public class AudioService extends Service implements IAudioService, ISeekPositionObserver {
+public class AudioService extends Service implements IAudioService, ISeekPositionObserver, IEqualizerObserver {
 
 	/** The debug tag of this class. */
 	public static final String DEBUG_TAG = AudioService.class.getSimpleName();
@@ -62,9 +63,11 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	public static final String EXTRA_SONG_NAME = "SONG_NAME";
 	
 	/** Tag used to identify the Broadcast message from the Service to the Activities when the song information needs an update. */
-	public static final String ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_INFORMATION_FROM_SERVICE";
+	public static final String ACTION_UPDATE_SONG_INFORMATION_FROM_SERVICE = "newSongInformation";
 	/** Tag used to identify the Broadcast message from the Service to the Activities when a new seek value is ready. */
-	public static final String ACTION_UPDATE_SONG_SEEK_FROM_SERVICE = "aks.jnv.AudioService.UPDATE_SONG_SEEK_FROM_SERVICE";
+	public static final String ACTION_UPDATE_SONG_SEEK_FROM_SERVICE = "newSeek";
+	/** Tag used to identify the Broadcast message from the Service to the Activities when a new seek value is ready. */
+	public static final String ACTION_UPDATE_EQUALIZER_VALUES = "newEqualizerValues";
 
 	//public final static int TAG_UPDATE_SONG_INFORMATION = 0;
 	
@@ -81,6 +84,18 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	public static final String ACTION_EXTRA_SONG_FORMAT = "UpdateSongInformationFormat";
 	/** Tag for the extra information from the service when it sends an update on the song duration. */
 	public static final String ACTION_EXTRA_SONG_DURATION = "UpdateSongInformationDuration";
+	
+	/** Tag for the extra information from the service when it sends the volume of the channel 1. */
+	public static final String ACTION_EXTRA_VOLUME_CHANNEL1 = "volumeChannel1";
+	/** Tag for the extra information from the service when it sends the volume of the channel 2. */
+	public static final String ACTION_EXTRA_VOLUME_CHANNEL2 = "volumeChannel2";
+	/** Tag for the extra information from the service when it sends the volume of the channel 3. */
+	public static final String ACTION_EXTRA_VOLUME_CHANNEL3 = "volumeChannel3";
+	/** Tag for the extra information from the service when it sends the noise. */
+	public static final String ACTION_EXTRA_NOISE = "noise";
+	
+	
+	
 
 	/** Tag for the extra information from the service when it sends a new seek value. */
 	public static final String ACTION_EXTRA_NEW_SEEK_VALUE = "UpdateSeekValue";
@@ -329,6 +344,7 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 				mAudioRenderer.setSongReader(mSongReader);
 				// Registers as a seek position observer.
 				mSongReader.addSeekObserver(this);
+				mSongReader.addEqualizerObserver(this);
 				
 				//audioRenderer.startSound();
 				
@@ -365,6 +381,11 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	public void stopSong() {
 		if (mAudioRenderer != null) {
 			mAudioRenderer.stopSound();
+		}
+		// Removes all observations.
+		if (mSongReader != null) {
+			mSongReader.removeSeekObserver(this);
+			mSongReader.removeEqualizerObserver(this);
 		}
 		mAudioRenderer = null;
 		// Allows the Service to be killed if memory is needed.
@@ -512,10 +533,9 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 	}
 	
 	
-	// ------------------------------------
-	// ISeekPosition implementation methods
-	// ------------------------------------
-
+	// --------------------------------------------------------------------------
+	// ISeekPositionObserver implementation methods
+	// --------------------------------------------------------------------------
 
 	@Override
 	public void notifyNewSeekPositionFromSubject(int seekPosition) {
@@ -526,6 +546,22 @@ public class AudioService extends Service implements IAudioService, ISeekPositio
 			intent.putExtra(ACTION_EXTRA_NEW_SEEK_VALUE, seekPosition);
 			sendLocalBroadcast(intent);
 		}
+	}
+
+
+	// --------------------------------------------------------------------------
+	// IEqualizerObserver implementation methods
+	// --------------------------------------------------------------------------
+	
+	@Override
+	public void notifyNewEqualizerValues(int channel1Volume, int channel2Volume, int channel3Volume, int noise) {
+		// Sends the new equalizer values as a broadcast.
+		Intent intent = new Intent(ACTION_UPDATE_EQUALIZER_VALUES);
+		intent.putExtra(ACTION_EXTRA_VOLUME_CHANNEL1, channel1Volume);
+		intent.putExtra(ACTION_EXTRA_VOLUME_CHANNEL2, channel2Volume);
+		intent.putExtra(ACTION_EXTRA_VOLUME_CHANNEL3, channel3Volume);
+		intent.putExtra(ACTION_EXTRA_NOISE, noise);
+		sendLocalBroadcast(intent);
 	}
 
 

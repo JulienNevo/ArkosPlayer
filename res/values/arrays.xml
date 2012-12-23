@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!-- String used in the Preferences in order to choose the Equalizer type. -->
+    <string-array name="equalizerTypes">
+        <item>@string/preferences_equalizer_type_3d</item>
+        <item>@string/preferences_equalizer_type_2d</item>
+        <item>@string/preferences_equalizer_type_none</item>
+    </string-array>
+</resources>

@@ -11,6 +11,8 @@
     <string name="empty">(empty)</string>
     <string name="author">Author</string>
     
+    <string name="music_default_path">"Music/YM/Tunes/"</string>
+    
     <!-- Descriptions -->
     <string name="description_image_music_selection_parent_folder">"Go to parent folder"</string>
     <string name="description_image_music_selection_go_to_play_music_activity">"Go to music player"</string>
@@ -24,6 +26,23 @@
     <string name="play_music_format">"Format :"</string>
     <string name="play_music_untitled_song">"Untitled song"</string>
     <string name="play_music_no_music_loaded">"No song is currently loaded."</string>
+    
+    <!-- Preferences Activity -->
+    <string name="preferences_equalizer">Equalizer</string>
+    <string name="preferences_music_path">Music path</string>
+    <string name="preferences_equalizer_type_3d">3D</string>
+    <string name="preferences_equalizer_type_2d">2D</string>
+    <string name="preferences_equalizer_type_none">None</string>
+    <!-- Keys for the Preferences. Shouldn't be changed. -->
+    <string name="preferences_key_equalizer">equalizerKey</string>
+    <string name="preferences_key_music_path">musicPathKey</string>
+
+    <!-- About Activity -->
+    <string name="about_title">Arkos Player rulez!</string>
+
+    <!-- Menu -->
+    <string name="menu_preferences">Preferences</string>
+    <string name="menu_about">About</string>
     
     <!-- Image descriptions -->
     <string name="selection_music_item_imageview_description">Selection item image</string>

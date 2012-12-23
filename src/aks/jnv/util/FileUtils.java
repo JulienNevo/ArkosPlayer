@@ -39,6 +39,11 @@ import java.io.InputStream;
 import net.sourceforge.lhadecompressor.LhaEntry;
 import net.sourceforge.lhadecompressor.LhaFile;
 
+import aks.jnv.R;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -53,7 +58,7 @@ public class FileUtils {
 	private static final String DEBUG_TAG = "FileUtils";
 	
  	/** Folder where is the music. */
-	public static final String MUSIC_FOLDER_ROOT = "/mnt/sdcard/Music/YM/Tunes";
+	//public static final String MUSIC_FOLDER_ROOT = "/mnt/sdcard/Music/YM/Tunes";
 	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Follin.Bros/";
 	//public static final String MUSIC_FOLDER = "/mnt/sdcard/Music/YM/Tunes/Whittacker.David/";
 
@@ -63,24 +68,43 @@ public class FileUtils {
 	/** The size of the buffer for reading files. */
 	private static final int BUFFER_SIZE = 16384;
 	
-//	/**
-//	 * Indicates if an external storage is available for reading (or read/write).
-//	 * @return true if an external storage is available for reading (or read/write).
-//	 */
-//	public static boolean isExternalStorageAvailableForReading() {
-//		String state = Environment.getExternalStorageState();
-//		return (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY));
-//	}
-//
-//	/**
-//	 * Returns the music folder, or Null if no device or no folder could be found.
-//	 * @param context the context.
-//	 * @return a File of the folder where the music are, or Null if no device or the folder could be found.
-//	 */
-//	public static File getMusicFolder(Context context) {
-//		return isExternalStorageAvailableForReading() ? Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC) : null;
-//	}
+	/**
+	 * Indicates if an external storage is available for reading (or read/write).
+	 * @return true if an external storage is available for reading (or read/write).
+	 */
+	public static boolean isExternalStorageAvailableForReading() {
+		String state = Environment.getExternalStorageState();
+		return (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY));
+	}
 
+	/**
+	 * Returns the music folder, or Null if no device or no folder could be found.
+	 * @return a File of the folder where the music are, or Null if no device or the folder could be found.
+	 */
+	public static File getExternalStorageRoot() {
+		return isExternalStorageAvailableForReading() ? Environment.getExternalStorageDirectory() : null;
+	}
+
+	/**
+	 * Returns the music folder root, either the default one or the one the user entered in the Preferences.
+	 * @param context A Context.
+	 * @return The music folder root, or null if a problem occurred.
+	 */
+	public static String getMusicFolderRoot(Context context) {
+		// Gets the folder from the user.
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		String folder = preferences.getString(context.getString(R.string.preferences_key_music_path),
+				context.getString(R.string.music_default_path));
+		// Once we have it, finds the path to the external storage root, such as the SDCard.
+		File externalStorageRootFile = getExternalStorageRoot();
+		if (externalStorageRootFile != null) {
+			String sdCardFolder = externalStorageRootFile.getPath().concat(File.separator);
+			folder = sdCardFolder.concat(folder);
+		}
+		
+		return folder;
+	}
+	
 	/**
 	 * Returns the music short name from its full path. Extension removed at will.
 	 * @param path The song full path.

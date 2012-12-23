@@ -30,6 +30,7 @@
 
 package aks.jnv.reader;
 
+import aks.jnv.audio.IEqualizerObserver;
 import aks.jnv.audio.ISeekPositionObserver;
 
 /**
@@ -125,6 +126,24 @@ public interface ISongReader {
 	 * @param observer the seek position observer.
 	 */
 	void addSeekObserver(ISeekPositionObserver observer);
+	
+	/**
+	 * Adds an equalizer observer. It will be notified whenever the equalizer values changes.
+	 * @param observer The equalizer observer.
+	 */
+	void addEqualizerObserver(IEqualizerObserver observer);
+	
+	/**
+	 * Removes a seek position observer.
+	 * @param observer The observer.
+	 */
+	void removeSeekObserver(ISeekPositionObserver observer);
+	
+	/**
+	 * Removes an equalizer position observer.
+	 * @param observer The observer.
+	 */
+	void removeEqualizerObserver(IEqualizerObserver observer);
 	
 	/**
 	 * Returns the volume value of the given channel.

@@ -33,6 +33,7 @@ package aks.jnv.reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import aks.jnv.audio.IEqualizerObserver;
 import aks.jnv.audio.ISeekPositionObserver;
 import aks.jnv.song.Song;
 
@@ -80,9 +81,9 @@ public class AKSSongReader implements ISongReader {
 		song = new Song(data, replayFrequency, PSGFrequency, null, null, null);
 	}
 	
-	// ***************************************
+	// ---------------------------------------------------------------------
 	// Getters and setters
-	// ***************************************
+	// ---------------------------------------------------------------------
 
 	/**
 	 * Returns the Song read by this Reader.
@@ -135,9 +136,10 @@ public class AKSSongReader implements ISongReader {
 		return FORMAT;
 	}
 	
-	// ***************************************
-	// Private methods
-	// ***************************************
+	
+	// ---------------------------------------------------------------------
+	// Private methods.
+	// ---------------------------------------------------------------------
 
 	/**
 	 * Parses the given raw binary data and fills the field of the song.
@@ -150,9 +152,9 @@ public class AKSSongReader implements ISongReader {
 	}
 	
 
-	// ***************************************
-	// Public methods
-	// ***************************************
+	// ---------------------------------------------------------------------
+	// ISongReader method implementations.
+	// ---------------------------------------------------------------------
 
 	
 	@Override
@@ -197,6 +199,24 @@ public class AKSSongReader implements ISongReader {
 	public int getNoiseChannels() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void addEqualizerObserver(IEqualizerObserver observer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeSeekObserver(ISeekPositionObserver observer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeEqualizerObserver(IEqualizerObserver observer) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

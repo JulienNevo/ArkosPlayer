@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import aks.jnv.audio.IEqualizerObserver;
 import aks.jnv.audio.ISeekPositionObserver;
 import aks.jnv.song.Song;
 import aks.jnv.song.SongUtil;
@@ -132,6 +133,9 @@ public class YMSongReader implements ISongReader {
 	
 	/** Observers of the seek position. They will be notified whenever it changes. */
 	private List<ISeekPositionObserver> mSeekPositionObservers = new ArrayList<ISeekPositionObserver>();
+
+	/** Observers of the equalizer values. They will be notified whenever they change. */
+	private List<IEqualizerObserver> mEqualizerObservers = new ArrayList<IEqualizerObserver>();
 	
 	/** The current seek position in seconds. */
 	private int mCurrentSeekPosition;
@@ -163,9 +167,9 @@ public class YMSongReader implements ISongReader {
 	}
 
 	
-	// ***************************************
+	// ---------------------------------------------------------------------
 	// Getters and setters
-	// ***************************************
+	// ---------------------------------------------------------------------
 
 	/**
 	 * Returns the Song read by this Reader.
@@ -321,9 +325,9 @@ public class YMSongReader implements ISongReader {
 	}
 
 
-	// ***************************************
-	// Public methods
-	// ***************************************
+	// ---------------------------------------------------------------------
+	// Public methods.
+	// ---------------------------------------------------------------------
 	
 	@Override
 	public int[] getNextRegisters() {
@@ -355,6 +359,8 @@ public class YMSongReader implements ISongReader {
 		setNewSeekPositionAndNotifyIfNeeded(newSeekPosition);
 		fillVolumeAndNoiseValues(mRegs);
 		
+		notifyNewEqualizerValues();
+		
 		return mRegs;
 	}
 
@@ -374,6 +380,22 @@ public class YMSongReader implements ISongReader {
 	public void addSeekObserver(ISeekPositionObserver observer) {
 		mSeekPositionObservers.add(observer);
 	}
+	
+	@Override
+	public void addEqualizerObserver(IEqualizerObserver observer) {
+		mEqualizerObservers.add(observer);
+	}
+
+	@Override
+	public void removeSeekObserver(ISeekPositionObserver observer) {
+		mSeekPositionObservers.remove(observer);
+	}
+
+	@Override
+	public void removeEqualizerObserver(IEqualizerObserver observer) {
+		mEqualizerObservers.remove(observer);
+	}
+
 
 	@Override
 	public void seek(int seconds) {
@@ -413,9 +435,9 @@ public class YMSongReader implements ISongReader {
 
 	
 	
-	// ***************************************
-	// Private methods
-	// ***************************************
+	// ---------------------------------------------------------------------
+	// Private methods.
+	// ---------------------------------------------------------------------
 
 	/**
 	 * Fills the volume and noise values so that the equalizer can read them when it wants.
@@ -471,11 +493,20 @@ public class YMSongReader implements ISongReader {
 		return frameNumber > mNbFrames ? mNbFrames : frameNumber;
 	}
 	
+	/**
+	 * Notifies the new equalizer values to observers.
+	 */
+	private void notifyNewEqualizerValues() {
+		for (IEqualizerObserver observer : mEqualizerObservers) {
+			observer.notifyNewEqualizerValues(mVolumeA, mVolumeB, mVolumeC, mNoiseValue);
+		}
+	}
 	
 	
-	// ***************************************
-	// Static public methods
-	// ***************************************
+	
+	// ---------------------------------------------------------------------
+	// Static public methods.
+	// ---------------------------------------------------------------------
 	
 	/**
 	 * Indicates if the given raw binary data fits the format of the song. It may be packed in LHA or not.
@@ -502,6 +533,10 @@ public class YMSongReader implements ISongReader {
 		
 		return result ? data : null;
 	}
+
+
+
+
 
 
 

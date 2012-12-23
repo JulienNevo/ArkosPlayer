@@ -41,9 +41,9 @@ import aks.jnv.task.FindMusicTask;
 import aks.jnv.task.FindMusicTask.IFindMusicTaskCallback;
 import aks.jnv.util.FileUtils;
 import aks.jnv.util.PreferenceUtils;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -56,13 +56,13 @@ import android.widget.TextView;
 /**
  * Activity in which the user can select the music to listen to. Also builds the list of Music to play, in every format.
  * 
- * @author Julien Névo.
+ * @author Julien Névo
  *
  */
-public class MusicSelectionActivity extends Activity implements IFindMusicTaskCallback, OnItemClickListener {
+public class MusicSelectionActivity extends BaseActivity implements IFindMusicTaskCallback, OnItemClickListener {
 
 	/** The debug tag of this class. */
-	//private static final String LOG_TAG = MusicSelectionActivity.class.getSimpleName();
+	private static final String LOG_TAG = MusicSelectionActivity.class.getSimpleName();
 
 	/** The tag used to give this Activity the name of the folder from where to start the search. */
 	public static final String EXTRA_MUSIC_PATH = "musicPath";
@@ -109,7 +109,7 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		// Uses a default folder if none is given.
 		// Also saves this folder in the Shared Preferences.
 		String musicPath = getIntent().getStringExtra(EXTRA_MUSIC_PATH);
-		mCurrentFolder = (musicPath == null) ? FileUtils.MUSIC_FOLDER_ROOT : musicPath;
+		mCurrentFolder = (musicPath == null) ? FileUtils.getMusicFolderRoot(this) : musicPath;
 		PreferenceUtils.setCurrentMusicFolder(this, mCurrentFolder);
 		
 		// Sets up the ListView and the Adapter.
@@ -118,6 +118,7 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemClickListener(this);
 		
+		Log.e(LOG_TAG, "PATH = " + FileUtils.getMusicFolderRoot(this));
 	}
 	
 	@Override
@@ -245,7 +246,10 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	 * @return True if the parent folder path is valid.
 	 */
 	private boolean isParentFolderPathValid(String parentPath) {
-		return (parentPath.length() >= FileUtils.MUSIC_FOLDER_ROOT.length());
+		String musicFolderRoot = FileUtils.getMusicFolderRoot(this);
+		return (musicFolderRoot != null) ?
+				(parentPath.length() >= musicFolderRoot.length())
+				: false;
 	}
 	
 	/**
@@ -255,7 +259,10 @@ public class MusicSelectionActivity extends Activity implements IFindMusicTaskCa
 	 * @return True if the path is allowed to reached its parent.
 	 */
 	private boolean isFolderAllowsBack(String path) {
-		return (path.length() > FileUtils.MUSIC_FOLDER_ROOT.length());
+		String musicFolderRoot = FileUtils.getMusicFolderRoot(this);
+		return (musicFolderRoot != null) ?
+				(path.length() > musicFolderRoot.length())
+				: false;
 	}
 	
 	/**

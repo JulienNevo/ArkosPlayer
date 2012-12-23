@@ -31,7 +31,6 @@
 package aks.jnv.view3d;
 
 import aks.jnv.accelerometer.IAccelerometerListener;
-import aks.jnv.reader.ISongReader;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
@@ -41,7 +40,7 @@ import android.util.AttributeSet;
  *
  * It is very important to use the 2-argument constructor, as it is this one that is used by the system, as this view is declared in an XML layout file.
  * 
- * @author Julien Nevo.
+ * @author Julien Névo.
  *
  */
 public class EqualizerGLSurfaceView extends GLSurfaceView implements IAccelerometerListener {
@@ -64,11 +63,14 @@ public class EqualizerGLSurfaceView extends GLSurfaceView implements IAccelerome
 	}
 
 	/**
-	 * Sets the SongReader in order to get the information for the equalizer.
-	 * @param songReader the SongReader.
+	 * Sets the equalizer values.
+	 * @param channel1Volume The volume for the channel 1.
+	 * @param channel2Volume The volume for the channel 2.
+	 * @param channel3Volume The volume for the channel 3.
+	 * @param noise The noise.
 	 */
-	public void setSongReader(ISongReader songReader) {
-		mRenderer.setSongReader(songReader);
+	public void setEqualizerValues(int channel1Volume, int channel2Volume, int channel3Volume, int noise) {
+		mRenderer.setEqualizerValues(channel1Volume, channel2Volume, channel3Volume, noise);
 	}
 
 	@Override
